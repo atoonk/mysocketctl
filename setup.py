@@ -1,11 +1,11 @@
 from setuptools import setup
 
 setup(
-    name='mysocketctl',
+    name='andreemysocketctl',
     version='0.1',
     description="CLI tool for mysocket.io",
     long_description=open("README.rst").read(),
-    py_modules=['mysocketctl'],
+    py_modules=['toonkmysocketctl'],
     install_requires=[
         'Click','requests','pyjwt','prettytable'
     ],
@@ -28,6 +28,6 @@ setup(
     ]
     entry_points='''
         [console_scripts]
-        mysocketctl=mysocketctl:cli
+        toonkmysocketctl=toonkmysocketctl:cli
     ''',
 )

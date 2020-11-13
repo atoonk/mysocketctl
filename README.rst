@@ -14,9 +14,10 @@ Authors
 
 Links
 -----
+* `mysocketctl documentation on readthedocs.io <https://andreet.readthedocs.io/en/latest/mysocketctl/mysocket.html#>`_
 * `Mysocket home page <https://mysocket.io/>`_
-* `Project home page (GitHub) <https://github.com/...>`_
+* `Project home page (GitHub) <https://github.com/atoonk/mysocketctl>`_
 
 Bugs
 ~~~~
-Please report bugs, issues, feature requests, etc. on `GitHub <https://github.com/.../issues>`_.
+Please report bugs, issues, feature requests, etc. on `GitHub <https://github.com/atoonk/mysocketctl/issues>`_.

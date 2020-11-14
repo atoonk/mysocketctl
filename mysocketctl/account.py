@@ -1,6 +1,5 @@
 import click
-from .utils import *
-
+from mysocketctl.utils import *
 
 @click.group()
 def account():

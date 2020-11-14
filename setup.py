@@ -1,11 +1,16 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
-    name='andreemysocketctl',
-    version='0.1',
+    name='mysocketctl',
+    packages=find_packages(),
+    #include_package_data=True,
+    license="Apache Software License",
+    #version='0.37',
     description="CLI tool for mysocket.io",
     long_description=open("README.rst").read(),
-    py_modules=['toonkmysocketctl'],
+    url="https://github.com/atoonk/mysocketctl",
+    author="Andree Toonk",
+    author_email="andree@mysocket.io",
     install_requires=[
         'Click','requests','pyjwt','prettytable'
     ],
@@ -25,9 +30,11 @@ setup(
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
         "Topic :: Software Development :: Libraries :: Python Modules"
-    ]
-    entry_points='''
-        [console_scripts]
-        toonkmysocketctl=toonkmysocketctl:cli
-    ''',
+    ],
+    #entry_points= {
+    #    'console_scripts': ['toonkmysocketctl=toonkmysocketctl.toonkmysocketctl:cli'],
+    #}
+    entry_points={
+        'console_scripts': ['mysocketctl = mysocketctl.mysocketcli:cli']
+    }
 )

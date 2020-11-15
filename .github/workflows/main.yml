@@ -74,12 +74,11 @@ jobs:
           name: MacOS
           path: dist    
       - name: Commit binary
-        uses: EndBug/add-and-commit@v5
+        uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          message: "adding MAC os Binary"
-          add: "binaries/macos"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          commit_message: "adding MAC os Binary"
+          commit_options: '--no-verify --signoff'
+          file_pattern: binaries/*
         
         
   bump-version:

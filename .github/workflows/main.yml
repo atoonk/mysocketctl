@@ -43,3 +43,36 @@ jobs:
           name: Ubuntu
           path: dist
 
+
+
+  build-macos:
+    runs-on: macOS-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Install Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.8'
+      - name: Install dependencies
+        run: |
+          sudo apt install python3-pip
+      - name: Print Versions
+        run: |
+          python --version
+          pip3 --version
+      - name: Install requirements
+        run: |
+          pip3 install requests 
+          pip3 install pyinstaller 
+          pip3 install mysocketctl
+      - name: Run PyInstaller
+        run: |
+          pyinstaller --onefile --additional-hooks-dir=. -w cli.py
+      - name: See dist directory
+        run: ls dist
+      - uses: actions/upload-artifact@master
+        with:
+          name: MacOS
+          path: dist
+          

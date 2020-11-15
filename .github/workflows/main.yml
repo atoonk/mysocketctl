@@ -72,7 +72,7 @@ jobs:
           path: dist
           
 
-  Bump version:
+  bump-version:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master

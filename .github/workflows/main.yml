@@ -76,8 +76,6 @@ jobs:
       - name: Commit binary
         uses: EndBug/add-and-commit@v5
         with:
-          author_name: Andree Toonk
-          author_email: andree@toonk.nl
           message: "adding MAC os Binary"
           add: "binaries/macos"
         env:

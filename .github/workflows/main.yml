@@ -75,13 +75,13 @@ jobs:
         with:
           name: MacOS
           path: dist    
-      - name: Commit binary
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: "adding MAC os Binary"
-          push_options: --force
-          commit_options: '--no-verify --signoff'
-          file_pattern: binaries/*
+      #- name: Commit binary
+      #  uses: stefanzweifel/git-auto-commit-action@v4
+      #  with:
+      #    commit_message: "adding MAC os Binary"
+      #    push_options: --force
+      #    commit_options: '--no-verify --signoff'
+      #    file_pattern: binaries/*
         
         
   bump-version:

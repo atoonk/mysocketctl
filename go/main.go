@@ -15,7 +15,7 @@ limitations under the License.
 */
 package main
 
-import "github.com/atoonk/mysocketctl/cmd"
+import "github.com/atoonk/mysocketctl/go/cmd"
 
 func main() {
 	cmd.Execute()

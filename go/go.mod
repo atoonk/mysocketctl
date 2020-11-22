@@ -1,4 +1,4 @@
-module github.com/atoonk/mysocketctl
+module github.com/atoonk/mysocketctl/go
 
 go 1.15
 

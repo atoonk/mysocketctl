@@ -17,6 +17,9 @@ package cmd
 
 import (
 	"fmt"
+	"log"
+
+	"github.com/atoonk/mysocketctl/go/internal/http"
 
 	"github.com/spf13/cobra"
 )
@@ -32,7 +35,15 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("login called")
+		email := args[0]
+		password := args[1]
+
+		_, err := http.Login(email, password)
+		if err != nil {
+			log.Fatalf("error: %v", err)
+		}
+
+		fmt.Println("login successful")
 	},
 }
 

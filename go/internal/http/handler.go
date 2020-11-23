@@ -8,7 +8,7 @@ import (
 	h "net/http"
 )
 
-const mysocketurl = "http://localhost:5000"
+const mysocketurl = "https://api.mysocket.io"
 
 // Client . . .
 type Client interface {

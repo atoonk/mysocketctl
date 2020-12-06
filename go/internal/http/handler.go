@@ -62,7 +62,6 @@ func Login(email, password string) (Client, error) {
 // Register ...
 func Register(name, email, password, sshkey string) error {
 	form := registerForm{Name: name, Email: email, Password: password, Sshkey: sshkey}
-	fmt.Printf("%s %s %s %s", name, email, password, sshkey)
 	buf, err := json.Marshal(form)
 	if err != nil {
 		return err

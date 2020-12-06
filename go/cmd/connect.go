@@ -17,30 +17,45 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/spf13/cobra"
 )
 
+func validSocketType() bool {
+	// TODO: figure out the right way to do this w/ cobra
+	switch socketType {
+	case "http",
+		"https",
+		"tcp",
+		"tls":
+		return true
+	default:
+		return false
+	}
+}
+
 // connectCmd represents the connect command
 var connectCmd = &cobra.Command{
 	Use:   "connect",
-	Short: "Quickly connect, Wrapper around sockets and tunnels",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Quickly connect, wrapper around sockets and tunnels",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("connect called")
+		if len(name) == 0 {
+			name = fmt.Sprintf("Local port %s", port)
+		}
+		if !validSocketType() {
+			log.Fatalf("--type should one of: http, https, tcp or tls")
+		}
+
 	},
 }
 
 func init() {
-	connectCmd.Flags().StringVarP(&password, "port", "p", "", "Port")
+	connectCmd.Flags().StringVarP(&port, "port", "p", "", "Port")
 	connectCmd.Flags().StringVarP(&name, "name", "n", "", "Service name")
+	connectCmd.Flags().StringVarP(&socketType, "type", "t", "http", "Socket type: http, https, tcp, tls")
 	connectCmd.MarkFlagRequired("port")
-	connectCmd.MarkFlagRequired("name")
 
 	rootCmd.AddCommand(connectCmd)
 

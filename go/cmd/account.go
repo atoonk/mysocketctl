@@ -23,34 +23,45 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	email    string
+	name     string
+	password string
+	sshkey   string
+)
+
 // accountCmd represents the account command
 var accountCmd = &cobra.Command{
-	Use:   "account",
-	Short: "Create a new account or see account information",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Use: "account",
 	Run: func(cmd *cobra.Command, args []string) {
+	},
+}
 
-		if len(args) > 2 {
-			name := args[0]
-			email := args[1]
-			password := args[2]
-			sshkey := args[3]
-			err := http.Register(name, email, password, sshkey)
-			if err != nil {
-				log.Fatalf("error: %v", err)
-			}
-
-			fmt.Println("account created, please check your email")
+var createCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Create a new account or see account information",
+	Run: func(cmd *cobra.Command, args []string) {
+		err := http.Register(name, email, password, sshkey)
+		if err != nil {
+			log.Fatalf("error: %v", err)
 		}
+
+		fmt.Println("account created, please check your email")
 	},
 }
 
 func init() {
+
+	createCmd.Flags().StringVarP(&email, "email", "e", "", "Email address")
+	createCmd.Flags().StringVarP(&name, "name", "n", "", "Your name")
+	createCmd.Flags().StringVarP(&password, "password", "p", "", "Password")
+	createCmd.Flags().StringVarP(&sshkey, "sshkey", "s", "", "SSH Key")
+	createCmd.MarkFlagRequired("email")
+	createCmd.MarkFlagRequired("name")
+	createCmd.MarkFlagRequired("password")
+	createCmd.MarkFlagRequired("sshkey")
+
+	accountCmd.AddCommand(createCmd)
 	rootCmd.AddCommand(accountCmd)
 
 	// Here you will define your flags and configuration settings.

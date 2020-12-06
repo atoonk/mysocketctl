@@ -23,13 +23,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	email    string
-	name     string
-	password string
-	sshkey   string
-)
-
 // accountCmd represents the account command
 var accountCmd = &cobra.Command{
 	Use: "account",

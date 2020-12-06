@@ -37,6 +37,11 @@ to quickly create a Cobra application.`,
 }
 
 func init() {
+	connectCmd.Flags().StringVarP(&password, "port", "p", "", "Port")
+	connectCmd.Flags().StringVarP(&name, "name", "n", "", "Service name")
+	connectCmd.MarkFlagRequired("port")
+	connectCmd.MarkFlagRequired("name")
+
 	rootCmd.AddCommand(connectCmd)
 
 	// Here you will define your flags and configuration settings.

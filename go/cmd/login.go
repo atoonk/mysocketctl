@@ -29,8 +29,6 @@ var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Login to mysocket and get a token",
 	Run: func(cmd *cobra.Command, args []string) {
-		email := args[0]
-		password := args[1]
 
 		_, err := http.Login(email, password)
 		if err != nil {
@@ -42,6 +40,11 @@ var loginCmd = &cobra.Command{
 }
 
 func init() {
+	loginCmd.Flags().StringVarP(&email, "email", "e", "", "Email address")
+	loginCmd.Flags().StringVarP(&password, "password", "p", "", "Password")
+	loginCmd.MarkFlagRequired("email")
+	loginCmd.MarkFlagRequired("password")
+
 	rootCmd.AddCommand(loginCmd)
 
 	// Here you will define your flags and configuration settings.

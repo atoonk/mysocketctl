@@ -35,7 +35,7 @@ jobs:
         run: |
           pyinstaller --onefile --additional-hooks-dir=. -w cli.py
       - name: See dist directory
-        run: ls dist
+        run: ls -la dist
       - uses: actions/upload-artifact@master
         with:
           name: Ubuntu
@@ -47,7 +47,7 @@ jobs:
     runs-on: macOS-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v1
       - name: Install Python
         uses: actions/setup-python@v1
         with:
@@ -64,11 +64,13 @@ jobs:
       - name: Run PyInstaller
         run: |
           pyinstaller --onefile --additional-hooks-dir=. -w cli.py
+      - name: See all directory
+        run: ls -la
       - name: See dist directory
-        run: ls dist
-      - name: mv file
-        run: |
-          mv dist/cli binaries/macos
+        run: ls -la dist
+      #- name: mv file
+      #  run: |
+      #    mv dist/cli binaries/macos
       - uses: actions/upload-artifact@master
         with:
           name: MacOS

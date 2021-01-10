@@ -34,9 +34,6 @@ and usage of using your command. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-	//Run: func(cmd *cobra.Command, args []string) {
-	//	fmt.Println("socket called")
-	//},
 }
 
 // socketsListCmd represents the socket ls command
@@ -79,11 +76,26 @@ to quickly create a Cobra application.`,
 			if username == "" {
 				log.Fatalf("error: --username required when using --protected")
 			}
-			if username == "" {
+			if password == "" {
 				log.Fatalf("error: --password required when using --protected")
 			}
 		}
-                fmt.Println("socket create called")
+
+		if name == "" {
+			log.Fatalf("error: empty name not allowed")
+		}
+
+		if socketType != "http" && socketType != "https" && socketType != "tcp" && socketType != "tls" {
+			log.Fatalf("error: --type should be either http, https, tcp or tls")
+		}
+
+		s, err := http.CreateSocket(name, protected, username, password, socketType)
+                if err != nil {
+                        log.Fatalf("error: %v", err)
+                }
+
+                fmt.Printf("%-36s | %-40s | %-40s\n", "Socket ID", "DNS Name", "Name")
+                fmt.Printf("%-36s | %-40s | %-40s\n", s.SocketID, s.Dnsname, s.Name)
         },
 }
 
@@ -98,7 +110,16 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
         Run: func(cmd *cobra.Command, args []string) {
-                fmt.Println("socket delete called")
+                if socketID == "" {
+                        log.Fatalf("error: invalid socketid")
+                }
+
+                err := http.DeleteSocket(socketID)
+                if err != nil {
+                        log.Fatalf("error: %v", err)
+                }
+
+                fmt.Println("Socket deleted")
         },
 }
 
@@ -122,5 +143,7 @@ func init() {
 	socketCreateCmd.Flags().StringVarP(&username, "username", "u", "", "Username, required when protected set to true")
 	socketCreateCmd.Flags().StringVarP(&password, "password", "", "", "Password, required when protected set to true")
 	socketCreateCmd.Flags().StringVarP(&socketType, "type", "t", "http", "Socket type, defaults to http")
-	socketCreateCmd.MarkPersistentFlagRequired("name")
+	socketCreateCmd.MarkFlagRequired("name")
+	socketDeleteCmd.Flags().StringVarP(&socketID, "id", "i", "", "Socket ID")
+	socketDeleteCmd.MarkFlagRequired("id")
 }

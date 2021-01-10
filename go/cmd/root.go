@@ -35,6 +35,8 @@ var (
 	sshkey     string
 	protected  bool
 	username   string
+	socketID   string
+	tunnelID   string
 )
 
 // rootCmd represents the base command when called without any subcommands

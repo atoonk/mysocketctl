@@ -9,6 +9,7 @@ import (
         "io"
 	"io/ioutil"
 	"golang.org/x/crypto/ssh"
+	"golang.org/x/crypto/ssh/agent"
 	"github.com/atoonk/mysocketctl/go/internal/http"
 	"github.com/dgrijalva/jwt-go"
 )
@@ -16,6 +17,14 @@ import (
 const (
 	mySocketSSHServer = "ssh.mysocket.io"
 )
+
+func SSHAgent() ssh.AuthMethod {
+	if sshAgent, err := net.Dial("unix", os.Getenv("SSH_AUTH_SOCK")); err == nil {
+		return ssh.PublicKeysCallback(agent.NewClient(sshAgent).Signers)
+	}
+	return nil
+}
+
 
 func SshConnect(socketID string, tunnelID string, port int, identityFile string) (error) {
 	tunnel, err := http.GetTunnel(socketID, tunnelID)
@@ -40,6 +49,7 @@ func SshConnect(socketID string, tunnelID string, port int, identityFile string)
 	sshConfig := &ssh.ClientConfig{
 		User: userID,
 		Auth: []ssh.AuthMethod{
+			SSHAgent(),
 			publicKeyFile(identityFile),
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
@@ -114,6 +124,10 @@ func handleClient(client net.Conn, remote net.Conn) {
 }
 
 func publicKeyFile(file string) ssh.AuthMethod {
+	if file == "" {
+		return nil
+	}
+
 	buffer, err := ioutil.ReadFile(file)
 	if err != nil {
 		log.Fatalln(fmt.Sprintf("Cannot read SSH public key file %s", file))

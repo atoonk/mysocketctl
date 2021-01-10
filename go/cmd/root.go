@@ -33,6 +33,8 @@ var (
 	password   string
 	port       string
 	sshkey     string
+	protected  bool
+	username   string
 )
 
 // rootCmd represents the base command when called without any subcommands

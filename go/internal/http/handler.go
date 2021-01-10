@@ -289,6 +289,34 @@ func CreateTunnel(socketID string) (*Tunnel, error) {
 	return t, nil
 }
 
+func GetTunnel(socketID string, tunnelID string) (*Tunnel, error) {
+	tunnel := Tunnel{}
+	token, err := GetToken()
+	if err != nil {
+		return nil, err
+	}
+
+	client := &h.Client{}
+	req, err := h.NewRequest("GET",mysocketurl+"/socket/"+socketID+"/tunnel/"+tunnelID, nil)
+	req.Header.Add("x-access-token", token)
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+                return nil, errors.New(fmt.Sprintf("Failed to get tunnel (%d)", resp.StatusCode))
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(&tunnel)
+	if err != nil {
+                return nil, errors.New("Failed to decode tunnel response")
+	}
+	return &tunnel, nil
+}
+
 func (c *client) CreateSocket(name string) error {
 
 	return nil

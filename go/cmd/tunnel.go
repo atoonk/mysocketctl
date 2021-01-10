@@ -21,6 +21,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/atoonk/mysocketctl/go/internal/http"
+	"github.com/atoonk/mysocketctl/go/internal/ssh"
 )
 
 // tunnelCmd represents the tunnel command
@@ -121,6 +122,17 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
         Run: func(cmd *cobra.Command, args []string) {
+                if socketID == "" {
+                        log.Fatalf("error: invalid socket_id")
+                }
+                if tunnelID == "" {
+                        log.Fatalf("error: invalid tunnel_id")
+                }
+                if port < 1 {
+                        log.Fatalf("error: invalid port")
+                }
+
+		ssh.SshConnect(socketID, tunnelID, port, identityFile)
         },
 }
 
@@ -149,4 +161,11 @@ func init() {
         tunnelListCmd.MarkFlagRequired("socket_id")
         tunnelCreateCmd.Flags().StringVarP(&socketID, "socket_id", "s", "", "Socket ID")
         tunnelCreateCmd.MarkFlagRequired("socket_id")
+        tunnelConnectCmd.Flags().StringVarP(&tunnelID, "tunnel_id", "t", "", "Tunnel ID")
+        tunnelConnectCmd.Flags().StringVarP(&socketID, "socket_id", "s", "", "Socket ID")
+        tunnelConnectCmd.Flags().StringVarP(&identityFile, "identity_file", "i", "", "Identity File")
+        tunnelConnectCmd.Flags().IntVarP(&port, "port", "p", 0, "Port number")
+        tunnelConnectCmd.MarkFlagRequired("tunnel_id")
+        tunnelConnectCmd.MarkFlagRequired("socket_id")
+        tunnelConnectCmd.MarkFlagRequired("port")
 }

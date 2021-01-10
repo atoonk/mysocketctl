@@ -52,7 +52,7 @@ var connectCmd = &cobra.Command{
 }
 
 func init() {
-	connectCmd.Flags().StringVarP(&port, "port", "p", "", "Port")
+	connectCmd.Flags().IntVarP(&port, "port", "p", 0, "Port")
 	connectCmd.Flags().StringVarP(&name, "name", "n", "", "Service name")
 	connectCmd.Flags().StringVarP(&socketType, "type", "t", "http", "Socket type: http, https, tcp, tls")
 	connectCmd.MarkFlagRequired("port")

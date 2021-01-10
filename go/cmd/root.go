@@ -26,17 +26,18 @@ import (
 )
 
 var (
-	cfgFile    string
-	email      string
-	name       string
-	socketType string
-	password   string
-	port       string
-	sshkey     string
-	protected  bool
-	username   string
-	socketID   string
-	tunnelID   string
+	cfgFile      string
+	email        string
+	name         string
+	socketType   string
+	password     string
+	port         int
+	sshkey       string
+	protected    bool
+	username     string
+	socketID     string
+	tunnelID     string
+	identityFile string
 )
 
 // rootCmd represents the base command when called without any subcommands

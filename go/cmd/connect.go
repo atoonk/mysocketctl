@@ -16,16 +16,16 @@ limitations under the License.
 package cmd
 
 import (
+	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
-	"fmt"
-	"log"
 	"time"
 
-	"github.com/spf13/cobra"
 	"github.com/atoonk/mysocketctl/go/internal/http"
 	"github.com/atoonk/mysocketctl/go/internal/ssh"
+	"github.com/spf13/cobra"
 )
 
 // connectCmd represents the connect command
@@ -33,37 +33,37 @@ var connectCmd = &cobra.Command{
 	Use:   "connect",
 	Short: "Quickly connect, wrapper around sockets and tunnels",
 	Run: func(cmd *cobra.Command, args []string) {
-                if protected {
-                        if username == "" {
-                                log.Fatalf("error: --username required when using --protected")
-                        }
-                        if password == "" {
-                                log.Fatalf("error: --password required when using --protected")
-                        }
-                }
+		if protected {
+			if username == "" {
+				log.Fatalf("error: --username required when using --protected")
+			}
+			if password == "" {
+				log.Fatalf("error: --password required when using --protected")
+			}
+		}
 
-                if name == "" {
-                        log.Fatalf("error: empty name not allowed")
-                }
+		if name == "" {
+			log.Fatalf("error: empty name not allowed")
+		}
 
-                if socketType != "http" && socketType != "https" && socketType != "tcp" && socketType != "tls" {
-                        log.Fatalf("error: --type should be either http, https, tcp or tls")
-                }
+		if socketType != "http" && socketType != "https" && socketType != "tcp" && socketType != "tls" {
+			log.Fatalf("error: --type should be either http, https, tcp or tls")
+		}
 
-                c, err := http.CreateConnection(name, protected, username, password, socketType)
-                if err != nil {
-                        log.Fatalf("error: %v", err)
-                }
+		c, err := http.CreateConnection(name, protected, username, password, socketType)
+		if err != nil {
+			log.Fatalf("error: %v", err)
+		}
 
 		fmt.Printf("%-36s | %-40s | %-40s\n", "Socket ID", "DNS Name", "Name")
 		fmt.Printf("%-36s | %-40s | %-40s\n", c.SocketID, c.Dnsname, c.Name)
 
-                userID, _, err2 := http.GetUserID()
-                if err2 != nil {
-                        log.Fatalf("error: %v", err2)
-                }
+		userID, _, err2 := http.GetUserID()
+		if err2 != nil {
+			log.Fatalf("error: %v", err2)
+		}
 
-                userIDStr := *userID
+		userIDStr := *userID
 		time.Sleep(2 * time.Second)
 		ch := make(chan os.Signal)
 		signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
@@ -77,25 +77,25 @@ var connectCmd = &cobra.Command{
 			os.Exit(0)
 		}()
 
-                ssh.SshConnect(userIDStr, c.SocketID, c.Tunnels[0].TunnelID, port, identityFile)
+		ssh.SshConnect(userIDStr, c.SocketID, c.Tunnels[0].TunnelID, port, identityFile)
 		fmt.Println("cleaning up...")
-                err = http.DeleteSocket(c.SocketID)
-                if err != nil {
-                        log.Fatalf("error: %v", err)
-                }
+		err = http.DeleteSocket(c.SocketID)
+		if err != nil {
+			log.Fatalf("error: %v", err)
+		}
 	},
 }
 
 func init() {
 	connectCmd.Flags().IntVarP(&port, "port", "p", 0, "Port")
 	connectCmd.Flags().StringVarP(&name, "name", "n", "", "Service name")
-        connectCmd.Flags().BoolVarP(&protected, "protected", "", false, "Protected, default no")
-        connectCmd.Flags().StringVarP(&username, "username", "u", "", "Username, required when protected set to true")
-        connectCmd.Flags().StringVarP(&password, "password", "", "", "Password, required when protected set to true")
+	connectCmd.Flags().BoolVarP(&protected, "protected", "", false, "Protected, default no")
+	connectCmd.Flags().StringVarP(&username, "username", "u", "", "Username, required when protected set to true")
+	connectCmd.Flags().StringVarP(&password, "password", "", "", "Password, required when protected set to true")
 	connectCmd.Flags().StringVarP(&socketType, "type", "t", "http", "Socket type: http, https, tcp, tls")
-        connectCmd.Flags().StringVarP(&identityFile, "identity_file", "i", "", "Identity File")
+	connectCmd.Flags().StringVarP(&identityFile, "identity_file", "i", "", "Identity File")
 	connectCmd.MarkFlagRequired("port")
-        connectCmd.MarkFlagRequired("name")
+	connectCmd.MarkFlagRequired("name")
 
 	rootCmd.AddCommand(connectCmd)
 }

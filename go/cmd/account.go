@@ -42,20 +42,20 @@ var createCmd = &cobra.Command{
 }
 
 var showCmd = &cobra.Command{
-        Use:   "show",
-        Short: "Show account information",
-        Run: func(cmd *cobra.Command, args []string) {
-                account, err := http.GetAccountInfo()
-                if err != nil {
-                        log.Fatalf("error: %v", err)
-                }
+	Use:   "show",
+	Short: "Show account information",
+	Run: func(cmd *cobra.Command, args []string) {
+		account, err := http.GetAccountInfo()
+		if err != nil {
+			log.Fatalf("error: %v", err)
+		}
 
 		fmt.Println("    Name: ", account.Name)
 		fmt.Println("   Email: ", account.Email)
 		fmt.Println(" User ID: ", account.UserID)
 		fmt.Println("SSH User: ", account.SshUsername)
 		fmt.Println(" SSH Key: ", account.SshKey)
-        },
+	},
 }
 
 func init() {

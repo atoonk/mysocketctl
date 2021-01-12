@@ -1,15 +1,15 @@
 package ssh
 
 import (
-        "fmt"
-        "log"
-        "os"
-        "net"
-        "io"
-	"io/ioutil"
+	"fmt"
+	"github.com/atoonk/mysocketctl/go/internal/http"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
-	"github.com/atoonk/mysocketctl/go/internal/http"
+	"io"
+	"io/ioutil"
+	"log"
+	"net"
+	"os"
 )
 
 const (
@@ -23,7 +23,7 @@ func SSHAgent() ssh.AuthMethod {
 	return nil
 }
 
-func SshConnect(userID string, socketID string, tunnelID string, port int, identityFile string) (error) {
+func SshConnect(userID string, socketID string, tunnelID string, port int, identityFile string) error {
 	tunnel, err := http.GetTunnel(socketID, tunnelID)
 
 	if err != nil {
@@ -39,7 +39,7 @@ func SshConnect(userID string, socketID string, tunnelID string, port int, ident
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
-	serverConn, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d",mySocketSSHServer, 22), sshConfig)
+	serverConn, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", mySocketSSHServer, 22), sshConfig)
 	if err != nil {
 		log.Fatalf("Dial INTO remote server error: %s", err)
 	}
@@ -73,7 +73,7 @@ func SshConnect(userID string, socketID string, tunnelID string, port int, ident
 			continue
 		}
 
-		local, err := net.Dial("tcp", fmt.Sprintf("%s:%d","localhost",port))
+		local, err := net.Dial("tcp", fmt.Sprintf("%s:%d", "localhost", port))
 		if err != nil {
 			log.Printf("Dial INTO local service error: %s", err)
 			continue

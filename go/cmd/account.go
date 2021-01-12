@@ -26,13 +26,11 @@ import (
 // accountCmd represents the account command
 var accountCmd = &cobra.Command{
 	Use: "account",
-	Run: func(cmd *cobra.Command, args []string) {
-	},
 }
 
 var createCmd = &cobra.Command{
 	Use:   "create",
-	Short: "Create a new account or see account information",
+	Short: "Create a new account",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := http.Register(name, email, password, sshkey)
 		if err != nil {
@@ -40,6 +38,23 @@ var createCmd = &cobra.Command{
 		}
 
 		fmt.Println("account created, please check your email")
+	},
+}
+
+var showCmd = &cobra.Command{
+	Use:   "show",
+	Short: "Show account information",
+	Run: func(cmd *cobra.Command, args []string) {
+		account, err := http.GetAccountInfo()
+		if err != nil {
+			log.Fatalf("error: %v", err)
+		}
+
+		fmt.Println("    Name: ", account.Name)
+		fmt.Println("   Email: ", account.Email)
+		fmt.Println(" User ID: ", account.UserID)
+		fmt.Println("SSH User: ", account.SshUsername)
+		fmt.Println(" SSH Key: ", account.SshKey)
 	},
 }
 
@@ -55,6 +70,7 @@ func init() {
 	createCmd.MarkFlagRequired("sshkey")
 
 	accountCmd.AddCommand(createCmd)
+	accountCmd.AddCommand(showCmd)
 	rootCmd.AddCommand(accountCmd)
 
 	// Here you will define your flags and configuration settings.

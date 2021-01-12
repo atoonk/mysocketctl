@@ -19,9 +19,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/spf13/cobra"
 	"github.com/atoonk/mysocketctl/go/internal/http"
 	"github.com/atoonk/mysocketctl/go/internal/ssh"
+	"github.com/spf13/cobra"
 )
 
 // tunnelCmd represents the tunnel command
@@ -37,111 +37,117 @@ to quickly create a Cobra application.`,
 }
 
 var tunnelListCmd = &cobra.Command{
-        Use:   "ls",
-        Short: "List your tunnels",
-        Long: `A longer description that spans multiple lines and likely contains examples
+	Use:   "ls",
+	Short: "List your tunnels",
+	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-        Run: func(cmd *cobra.Command, args []string) {
-               if socketID == "" {
+	Run: func(cmd *cobra.Command, args []string) {
+		if socketID == "" {
 			log.Fatalf("error: --socket_id required")
 		}
-                tunnels, err := http.GetTunnels(socketID)
+		tunnels, err := http.GetTunnels(socketID)
 
-                if err != nil {
-                        log.Fatalf("error: %v", err)
-                }
+		if err != nil {
+			log.Fatalf("error: %v", err)
+		}
 
-                fmt.Printf("%-36s | %-16s | %-10s\n", "Tunnel ID", "Tunnel Server", "Relay Port")
-                for _, t := range tunnels {
-                                fmt.Printf("%-36s | %-16s | %-10d\n", t.TunnelID, t.TunnelServer, t.LocalPort)
-                }
+		fmt.Printf("%-36s | %-16s | %-10s\n", "Tunnel ID", "Tunnel Server", "Relay Port")
+		for _, t := range tunnels {
+			fmt.Printf("%-36s | %-16s | %-10d\n", t.TunnelID, t.TunnelServer, t.LocalPort)
+		}
 	},
 }
 
 var tunnelDeleteCmd = &cobra.Command{
-        Use:   "delete",
-        Short: "Delete a tunnel",
-        Long: `A longer description that spans multiple lines and likely contains examples
+	Use:   "delete",
+	Short: "Delete a tunnel",
+	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-        Run: func(cmd *cobra.Command, args []string) {
-                if socketID == "" {
-                        log.Fatalf("error: invalid socket_id")
-                }
-                if tunnelID == "" {
-                        log.Fatalf("error: invalid tunnel_id")
-                }
+	Run: func(cmd *cobra.Command, args []string) {
+		if socketID == "" {
+			log.Fatalf("error: invalid socket_id")
+		}
+		if tunnelID == "" {
+			log.Fatalf("error: invalid tunnel_id")
+		}
 
-                err := http.DeleteTunnel(socketID, tunnelID)
-                if err != nil {
-                        log.Fatalf("error: %v", err)
-                }
+		err := http.DeleteTunnel(socketID, tunnelID)
+		if err != nil {
+			log.Fatalf("error: %v", err)
+		}
 
-                fmt.Println("Tunnel deleted")
-        },
+		fmt.Println("Tunnel deleted")
+	},
 }
 
 var tunnelCreateCmd = &cobra.Command{
-        Use:   "create",
-        Short: "Create a tunnel",
-        Long: `A longer description that spans multiple lines and likely contains examples
+	Use:   "create",
+	Short: "Create a tunnel",
+	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-        Run: func(cmd *cobra.Command, args []string) {
-                if socketID == "" {
-                        log.Fatalf("error: empty socket_id not allowed")
-                }
+	Run: func(cmd *cobra.Command, args []string) {
+		if socketID == "" {
+			log.Fatalf("error: empty socket_id not allowed")
+		}
 
-                t, err := http.CreateTunnel(socketID)
-                if err != nil {
-                        log.Fatalf("error: %v", err)
-                }
+		t, err := http.CreateTunnel(socketID)
+		if err != nil {
+			log.Fatalf("error: %v", err)
+		}
 
-                fmt.Printf("%-36s | %-16s | %-10s\n", "Tunnel ID", "Tunnel Server", "Relay Port")
-                fmt.Printf("%-36s | %-16s | %-10d\n", t.TunnelID, t.TunnelServer, t.LocalPort)
-        },
+		fmt.Printf("%-36s | %-16s | %-10s\n", "Tunnel ID", "Tunnel Server", "Relay Port")
+		fmt.Printf("%-36s | %-16s | %-10d\n", t.TunnelID, t.TunnelServer, t.LocalPort)
+	},
 }
 
 var tunnelConnectCmd = &cobra.Command{
-        Use:   "connect",
-        Short: "Connect a tunnel",
-        Long: `A longer description that spans multiple lines and likely contains examples
+	Use:   "connect",
+	Short: "Connect a tunnel",
+	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-        Run: func(cmd *cobra.Command, args []string) {
-                if socketID == "" {
-                        log.Fatalf("error: invalid socket_id")
-                }
-                if tunnelID == "" {
-                        log.Fatalf("error: invalid tunnel_id")
-                }
-                if port < 1 {
-                        log.Fatalf("error: invalid port")
-                }
+	Run: func(cmd *cobra.Command, args []string) {
+		if socketID == "" {
+			log.Fatalf("error: invalid socket_id")
+		}
+		if tunnelID == "" {
+			log.Fatalf("error: invalid tunnel_id")
+		}
+		if port < 1 {
+			log.Fatalf("error: invalid port")
+		}
 
-		ssh.SshConnect(socketID, tunnelID, port, identityFile)
-        },
+		userID, _, err := http.GetUserID()
+		if err != nil {
+			log.Fatalf("error: %v", err)
+		}
+
+		userIDStr := *userID
+		ssh.SshConnect(userIDStr, socketID, tunnelID, port, identityFile)
+	},
 }
 
 func init() {
 	rootCmd.AddCommand(tunnelCmd)
-        tunnelCmd.AddCommand(tunnelListCmd)
-        tunnelCmd.AddCommand(tunnelCreateCmd)
-        tunnelCmd.AddCommand(tunnelDeleteCmd)
-        tunnelCmd.AddCommand(tunnelConnectCmd)
+	tunnelCmd.AddCommand(tunnelListCmd)
+	tunnelCmd.AddCommand(tunnelCreateCmd)
+	tunnelCmd.AddCommand(tunnelDeleteCmd)
+	tunnelCmd.AddCommand(tunnelConnectCmd)
 
 	// Here you will define your flags and configuration settings.
 
@@ -153,19 +159,19 @@ func init() {
 	// is called directly, e.g.:
 	// tunnelCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-        tunnelDeleteCmd.Flags().StringVarP(&tunnelID, "tunnel_id", "t", "", "Tunnel ID")
-        tunnelDeleteCmd.Flags().StringVarP(&socketID, "socket_id", "s", "", "Socket ID")
-        tunnelDeleteCmd.MarkFlagRequired("tunnel_id")
-        tunnelDeleteCmd.MarkFlagRequired("socket_id")
-        tunnelListCmd.Flags().StringVarP(&socketID, "socket_id", "s", "", "Socket ID")
-        tunnelListCmd.MarkFlagRequired("socket_id")
-        tunnelCreateCmd.Flags().StringVarP(&socketID, "socket_id", "s", "", "Socket ID")
-        tunnelCreateCmd.MarkFlagRequired("socket_id")
-        tunnelConnectCmd.Flags().StringVarP(&tunnelID, "tunnel_id", "t", "", "Tunnel ID")
-        tunnelConnectCmd.Flags().StringVarP(&socketID, "socket_id", "s", "", "Socket ID")
-        tunnelConnectCmd.Flags().StringVarP(&identityFile, "identity_file", "i", "", "Identity File")
-        tunnelConnectCmd.Flags().IntVarP(&port, "port", "p", 0, "Port number")
-        tunnelConnectCmd.MarkFlagRequired("tunnel_id")
-        tunnelConnectCmd.MarkFlagRequired("socket_id")
-        tunnelConnectCmd.MarkFlagRequired("port")
+	tunnelDeleteCmd.Flags().StringVarP(&tunnelID, "tunnel_id", "t", "", "Tunnel ID")
+	tunnelDeleteCmd.Flags().StringVarP(&socketID, "socket_id", "s", "", "Socket ID")
+	tunnelDeleteCmd.MarkFlagRequired("tunnel_id")
+	tunnelDeleteCmd.MarkFlagRequired("socket_id")
+	tunnelListCmd.Flags().StringVarP(&socketID, "socket_id", "s", "", "Socket ID")
+	tunnelListCmd.MarkFlagRequired("socket_id")
+	tunnelCreateCmd.Flags().StringVarP(&socketID, "socket_id", "s", "", "Socket ID")
+	tunnelCreateCmd.MarkFlagRequired("socket_id")
+	tunnelConnectCmd.Flags().StringVarP(&tunnelID, "tunnel_id", "t", "", "Tunnel ID")
+	tunnelConnectCmd.Flags().StringVarP(&socketID, "socket_id", "s", "", "Socket ID")
+	tunnelConnectCmd.Flags().StringVarP(&identityFile, "identity_file", "i", "", "Identity File")
+	tunnelConnectCmd.Flags().IntVarP(&port, "port", "p", 0, "Port number")
+	tunnelConnectCmd.MarkFlagRequired("tunnel_id")
+	tunnelConnectCmd.MarkFlagRequired("socket_id")
+	tunnelConnectCmd.MarkFlagRequired("port")
 }

@@ -30,7 +30,7 @@ var loginCmd = &cobra.Command{
 	Short: "Login to mysocket and get a token",
 	Run: func(cmd *cobra.Command, args []string) {
 
-		_, err := http.Login(email, password)
+		err := http.Login(email, password)
 		if err != nil {
 			log.Fatalf("error: %v", err)
 		}

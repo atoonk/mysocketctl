@@ -3,7 +3,6 @@ package ssh
 import (
         "fmt"
         "log"
-        "strings"
         "os"
         "net"
         "io"
@@ -11,7 +10,6 @@ import (
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
 	"github.com/atoonk/mysocketctl/go/internal/http"
-	"github.com/dgrijalva/jwt-go"
 )
 
 const (
@@ -25,26 +23,12 @@ func SSHAgent() ssh.AuthMethod {
 	return nil
 }
 
-
-func SshConnect(socketID string, tunnelID string, port int, identityFile string) (error) {
+func SshConnect(userID string, socketID string, tunnelID string, port int, identityFile string) (error) {
 	tunnel, err := http.GetTunnel(socketID, tunnelID)
 
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
-
-	tokenStr, err := http.GetToken()
-	if err != nil {
-		return err
-	}
-
-	token, err := jwt.Parse(tokenStr, nil)
-	if token == nil {
-		log.Fatalf("error: %v", err)
-	}
-	claims, _ := token.Claims.(jwt.MapClaims)
-	tokenUserId := fmt.Sprintf("%v", claims["user_id"])
-	userID := strings.ReplaceAll(tokenUserId, "-", "")
 
 	sshConfig := &ssh.ClientConfig{
 		User: userID,

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	h "net/http"
+        "github.com/dgrijalva/jwt-go"
 )
 
 const (
@@ -19,47 +20,33 @@ var (
         tokenfile   = fmt.Sprintf("%s/.mysocketio_token",os.Getenv("HOME"))
 )
 
-
-// Client . . .
-type Client interface {
-	CreateSocket(name string) error
-}
-
 type client struct {
 	token string
 }
 
-var _ Client = &client{}
-
-// NewClientWithToken ...
-func NewClientWithToken(token string) Client {
-	return &client{token: token}
-}
-
-// Login ...
-func Login(email, password string) (Client, error) {
+func Login(email, password string) (error) {
 	c := &client{}
 	form := loginForm{Email: email, Password: password}
 	buf, err := json.Marshal(form)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	requestReader := bytes.NewReader(buf)
 
 	resp, err := h.Post(mysocketurl+"/login", "application/json", requestReader)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	defer resp.Body.Close()
 
 	if resp.StatusCode == 401 {
-		return nil, errors.New("Login failed")
+		return errors.New("Login failed")
 	}
 
 	if resp.StatusCode != 200 {
-		return nil, errors.New("failed to login")
+		return errors.New("failed to login")
 	}
 
 	res := tokenForm{}
@@ -69,19 +56,18 @@ func Login(email, password string) (Client, error) {
 
 	f, err := os.Create(tokenfile)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	defer f.Close()
 	_, err2 := f.WriteString(fmt.Sprintf("%s\n", c.token))
 	if err2 != nil {
-		return nil, err2
+		return err2
 	}
 
-	return c, nil
+	return nil
 }
 
-// Register ...
 func Register(name, email, password, sshkey string) error {
 	form := registerForm{Name: name, Email: email, Password: password, Sshkey: sshkey}
 	buf, err := json.Marshal(form)
@@ -317,7 +303,94 @@ func GetTunnel(socketID string, tunnelID string) (*Tunnel, error) {
 	return &tunnel, nil
 }
 
-func (c *client) CreateSocket(name string) error {
+func GetUserID() (*string, *string, error) {
+        tokenStr, err := GetToken()
+        if err != nil {
+                return nil, nil, err
+        }
 
-	return nil
+        token, err := jwt.Parse(tokenStr, nil)
+        if token == nil {
+		return nil, nil, err
+        }
+
+        claims, _ := token.Claims.(jwt.MapClaims)
+        tokenUserId := fmt.Sprintf("%v", claims["user_id"])
+        userID := strings.ReplaceAll(tokenUserId, "-", "")
+
+        return &userID, &tokenUserId, nil
 }
+
+func GetAccountInfo() (*Account, error) {
+	_, userID, err1 := GetUserID()
+	if err1 != nil {
+		return nil, err1
+	}
+
+        account := Account{}
+        token, err := GetToken()
+        if err != nil {
+                return nil, err
+        }
+
+	client := &h.Client{}
+	req, err := h.NewRequest("GET",mysocketurl+"/user/"+*userID, nil)
+	req.Header.Add("x-access-token", token)
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+                return nil, errors.New(fmt.Sprintf("Failed to get account (%d)", resp.StatusCode))
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(&account)
+	if err != nil {
+                return nil, errors.New("Failed to decode account response")
+	}
+	return &account, nil
+}
+
+func CreateConnection(name string, protected bool, username string, password string, socketType string) (*Socket, error) {
+	s := &Socket{
+		Name:                   name,
+		ProtectedSocket:        protected,
+		SocketType:             socketType,
+		ProtectedUsername:      username,
+		ProtectedPassword:      password,
+	}
+
+	jv, _ := json.Marshal(s)
+	body := bytes.NewBuffer(jv)
+
+	token, err := GetToken()
+	if err != nil {
+		return nil, err
+	}
+
+	client := &h.Client{}
+	req, err := h.NewRequest("POST",mysocketurl+"/connect",  body)
+	req.Header.Add("x-access-token", token)
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		responseData, _ := ioutil.ReadAll(resp.Body)
+                return nil, errors.New(fmt.Sprintf("Failed to create connection (%d) %v", resp.StatusCode, string(responseData)))
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(&s)
+	if err != nil {
+                return nil, errors.New("Failed to decode create connection response")
+	}
+	return s, nil
+}
+

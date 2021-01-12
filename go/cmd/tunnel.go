@@ -132,7 +132,13 @@ to quickly create a Cobra application.`,
                         log.Fatalf("error: invalid port")
                 }
 
-		ssh.SshConnect(socketID, tunnelID, port, identityFile)
+                userID, _, err := http.GetUserID()
+                if err != nil {
+                        log.Fatalf("error: %v", err)
+                }
+
+		userIDStr := *userID
+		ssh.SshConnect(userIDStr, socketID, tunnelID, port, identityFile)
         },
 }
 

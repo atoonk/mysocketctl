@@ -54,7 +54,7 @@ func SshConnect(userID string, socketID string, tunnelID string, port int, ident
 
 	session, err := serverConn.NewSession()
 	if err != nil {
-		log.Fatalf("Failed to create session: ", err)
+		log.Fatalf("Failed to create session: %v", err)
 	}
 	defer session.Close()
 

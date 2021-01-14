@@ -18,10 +18,11 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/atoonk/mysocketctl/go/internal/http"
 	"github.com/spf13/cobra"
-	//"github.com/davecgh/go-spew/spew"
+	"github.com/jedib0t/go-pretty/table"
 )
 
 // socketCmd represents the socket command
@@ -48,16 +49,30 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		sockets, err := http.GetSockets()
+		var portsStr string
 
 		if err != nil {
 			log.Fatalf("error: %v", err)
 		}
 
-		fmt.Printf("%-36s | %-40s | %-40s\n", "Socket ID", "DNS Name", "Name")
-		for _, s := range sockets {
-			fmt.Printf("%-36s | %-40s | %-40s\n", s.SocketID, s.Dnsname, s.Name)
-		}
+		t := table.NewWriter()
+		t.AppendHeader(table.Row{"Socket ID", "DNS Name", "Port(s)", "Type", "Cloud Auth", "Name"})
 
+		for _, s := range sockets {
+			portsStr = ""
+			for _, p := range s.SocketTcpPorts {
+				i := strconv.Itoa(p)
+				if portsStr == "" {
+					portsStr = i
+				} else {
+					portsStr = portsStr + ", " + i
+				}
+			}
+
+			t.AppendRow(table.Row{s.SocketID, s.Dnsname, portsStr, s.SocketType, s.CloudAuthEnabled, s.Name})
+		}
+		t.SetStyle(table.StyleLight)
+		fmt.Printf("%s\n", t.Render())
 	},
 }
 

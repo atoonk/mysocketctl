@@ -7,6 +7,7 @@ import (
 	"golang.org/x/crypto/ssh/agent"
 	"io"
 	"io/ioutil"
+	"os/signal"
 	"log"
 	"net"
 	"os"
@@ -39,46 +40,67 @@ func SshConnect(userID string, socketID string, tunnelID string, port int, ident
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
-	serverConn, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", mySocketSSHServer, 22), sshConfig)
-	if err != nil {
-		log.Fatalf("Dial INTO remote server error: %s", err)
-	}
-
-	listener, err := serverConn.Listen("tcp", fmt.Sprintf("localhost:%d", tunnel.LocalPort))
-	if err != nil {
-		log.Fatalf("Listen open port ON remote server on port %d error: %s", tunnel.LocalPort, err)
-	}
-	defer listener.Close()
-
-	log.Printf("ssh tunnel started to localhost:%d", tunnel.LocalPort)
-
-	session, err := serverConn.NewSession()
-	if err != nil {
-		log.Fatalf("Failed to create session: %v", err)
-	}
-	defer session.Close()
-
-	log.Printf("ssh session started")
-
-	session.Stdout = os.Stdout
-
-	if err := session.Shell(); err != nil {
-		log.Fatal(err)
-	}
+	fmt.Println("\nConnecting to Server: " + mySocketSSHServer + "\n")
 
 	for {
-		client, err := listener.Accept()
+		serverConn, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", mySocketSSHServer, 22), sshConfig)
 		if err != nil {
+			log.Printf("Dial INTO remote server error: %s", err)
+			continue
+		}
+
+		listener, err := serverConn.Listen("tcp", fmt.Sprintf("localhost:%d", tunnel.LocalPort))
+		if err != nil {
+			log.Printf("Listen open port ON remote server on port %d error: %s", tunnel.LocalPort, err)
+			continue
+		}
+		defer listener.Close()
+
+		session, err := serverConn.NewSession()
+		if err != nil {
+			log.Printf("Failed to create session: %v", err)
+			continue
+		}
+		defer session.Close()
+
+		session.Stdout = os.Stdout
+		modes := ssh.TerminalModes{}
+
+		if err := session.RequestPty("xterm-256color", 80, 40, modes); err != nil {
+			log.Printf("request for pseudo terminal failed: %s", err)
+			continue
+		}
+
+		if err := session.Shell(); err != nil {
 			log.Print(err)
 			continue
 		}
 
-		local, err := net.Dial("tcp", fmt.Sprintf("%s:%d", "localhost", port))
-		if err != nil {
-			log.Printf("Dial INTO local service error: %s", err)
-			continue
+		// Handle control + C
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, os.Interrupt)
+		go func() {
+			for {
+				<-c
+				log.Print("User disconnected...")
+				os.Exit(0)
+			}
+		}()
+
+		for {
+			client, err := listener.Accept()
+			if err != nil {
+				log.Print(err)
+				continue
+			}
+
+			local, err := net.Dial("tcp", fmt.Sprintf("%s:%d", "localhost", port))
+			if err != nil {
+				log.Printf("Dial INTO local service error: %s", err)
+				continue
+			}
+			handleClient(client, local)
 		}
-		handleClient(client, local)
 	}
 }
 

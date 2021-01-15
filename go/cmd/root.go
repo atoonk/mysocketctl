@@ -44,9 +44,6 @@ var (
 var rootCmd = &cobra.Command{
 	Use:   "mysocketctl",
 	Short: "mysocket.io command line interface (CLI)",
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -96,4 +93,19 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
+}
+
+func splitLongLines(b string, maxLength int) (string) {
+	s := ""
+	for {
+		if len(b) > maxLength {
+			s = s + b[0:maxLength] + "\n"
+			b = b[maxLength:]
+		} else {
+			s = s + b
+			break
+		}
+	}
+
+	return s
 }

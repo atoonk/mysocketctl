@@ -21,6 +21,7 @@ import (
 
 	"github.com/atoonk/mysocketctl/go/internal/http"
 	"github.com/spf13/cobra"
+	"github.com/jedib0t/go-pretty/table"
 )
 
 // accountCmd represents the account command
@@ -50,11 +51,14 @@ var showCmd = &cobra.Command{
 			log.Fatalf("error: %v", err)
 		}
 
-		fmt.Println("    Name: ", account.Name)
-		fmt.Println("   Email: ", account.Email)
-		fmt.Println(" User ID: ", account.UserID)
-		fmt.Println("SSH User: ", account.SshUsername)
-		fmt.Println(" SSH Key: ", account.SshKey)
+		t := table.NewWriter()
+		t.AppendRow(table.Row{"Name", account.Name})
+		t.AppendRow(table.Row{"Email", account.Email})
+		t.AppendRow(table.Row{"User ID", account.UserID})
+		t.AppendRow(table.Row{"SSH Username", account.SshUsername})
+		t.AppendRow(table.Row{"SSH Key", splitLongLines(account.SshKey, 80)})
+		t.SetStyle(table.StyleLight)
+		fmt.Printf("%s\n", t.Render())
 	},
 }
 

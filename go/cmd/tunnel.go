@@ -22,6 +22,7 @@ import (
 	"github.com/atoonk/mysocketctl/go/internal/http"
 	"github.com/atoonk/mysocketctl/go/internal/ssh"
 	"github.com/spf13/cobra"
+	"github.com/jedib0t/go-pretty/table"
 )
 
 // tunnelCmd represents the tunnel command
@@ -55,10 +56,15 @@ to quickly create a Cobra application.`,
 			log.Fatalf("error: %v", err)
 		}
 
-		fmt.Printf("%-36s | %-16s | %-10s\n", "Tunnel ID", "Tunnel Server", "Relay Port")
+		ta := table.NewWriter()
+		ta.AppendHeader(table.Row{"Socket ID", "Tunnel ID", "Tunnel Server", "Relay Port"})
+
 		for _, t := range tunnels {
-			fmt.Printf("%-36s | %-16s | %-10d\n", t.TunnelID, t.TunnelServer, t.LocalPort)
+			ta.AppendRow(table.Row{socketID, t.TunnelID, t.TunnelServer, t.LocalPort})
 		}
+
+		ta.SetStyle(table.StyleLight)
+		fmt.Printf("%s\n", ta.Render())
 	},
 }
 

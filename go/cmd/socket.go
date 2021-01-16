@@ -29,12 +29,6 @@ import (
 var socketCmd = &cobra.Command{
 	Use:   "socket",
 	Short: "Manage your global sockets",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
 }
 
 // socketsListCmd represents the socket ls command
@@ -159,6 +153,6 @@ func init() {
 	socketCreateCmd.Flags().StringVarP(&password, "password", "", "", "Password, required when protected set to true")
 	socketCreateCmd.Flags().StringVarP(&socketType, "type", "t", "http", "Socket type, defaults to http")
 	socketCreateCmd.MarkFlagRequired("name")
-	socketDeleteCmd.Flags().StringVarP(&socketID, "id", "i", "", "Socket ID")
-	socketDeleteCmd.MarkFlagRequired("id")
+	socketDeleteCmd.Flags().StringVarP(&socketID, "socket_id", "i", "", "Socket ID")
+	socketDeleteCmd.MarkFlagRequired("socket_id")
 }

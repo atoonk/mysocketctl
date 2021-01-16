@@ -39,7 +39,9 @@ var createCmd = &cobra.Command{
 			log.Fatalf("error: %v", err)
 		}
 
-		fmt.Println("account created, please check your email")
+		fmt.Println("Congratulation! your account has been created. Please check your email.")
+		fmt.Println("Please complete the account registration by following the confirmation link in your email.")
+		fmt.Println("After that login with login --email '<EMAIL>' --password '*****'")
 	},
 }
 

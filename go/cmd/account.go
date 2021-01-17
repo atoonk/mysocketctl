@@ -27,7 +27,7 @@ import (
 // accountCmd represents the account command
 var accountCmd = &cobra.Command{
 	Use: "account",
-    Short: "Create a new account or see account information.",
+	Short: "Create a new account or see account information.",
 }
 
 var createCmd = &cobra.Command{

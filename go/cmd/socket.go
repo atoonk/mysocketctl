@@ -135,6 +135,6 @@ func init() {
 	socketCreateCmd.Flags().StringVarP(&password, "password", "", "", "Password, required when protected set to true")
 	socketCreateCmd.Flags().StringVarP(&socketType, "type", "t", "http", "Socket type, defaults to http")
 	socketCreateCmd.MarkFlagRequired("name")
-	socketDeleteCmd.Flags().StringVarP(&socketID, "socket_id", "i", "", "Socket ID")
+	socketDeleteCmd.Flags().StringVarP(&socketID, "socket_id", "s", "", "Socket ID")
 	socketDeleteCmd.MarkFlagRequired("socket_id")
 }

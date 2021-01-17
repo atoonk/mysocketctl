@@ -29,23 +29,11 @@ import (
 var tunnelCmd = &cobra.Command{
 	Use:   "tunnel",
 	Short: "Manage your tunnels",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
 }
 
 var tunnelListCmd = &cobra.Command{
 	Use:   "ls",
 	Short: "List your tunnels",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if socketID == "" {
 			log.Fatalf("error: --socket_id required")
@@ -71,12 +59,6 @@ to quickly create a Cobra application.`,
 var tunnelDeleteCmd = &cobra.Command{
 	Use:   "delete",
 	Short: "Delete a tunnel",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if socketID == "" {
 			log.Fatalf("error: invalid socket_id")
@@ -97,12 +79,6 @@ to quickly create a Cobra application.`,
 var tunnelCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create a tunnel",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if socketID == "" {
 			log.Fatalf("error: empty socket_id not allowed")
@@ -121,12 +97,6 @@ to quickly create a Cobra application.`,
 var tunnelConnectCmd = &cobra.Command{
 	Use:   "connect",
 	Short: "Connect a tunnel",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if socketID == "" {
 			log.Fatalf("error: invalid socket_id")

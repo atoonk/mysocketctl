@@ -29,24 +29,12 @@ import (
 var socketCmd = &cobra.Command{
 	Use:   "socket",
 	Short: "Manage your global sockets",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
 }
 
 // socketsListCmd represents the socket ls command
 var socketsListCmd = &cobra.Command{
 	Use:   "ls",
-	Short: "List your global sockets",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "List your sockets",
 	Run: func(cmd *cobra.Command, args []string) {
 		sockets, err := http.GetSockets()
 		var portsStr string
@@ -79,13 +67,7 @@ to quickly create a Cobra application.`,
 // socketCreateCmd represents the socket create command
 var socketCreateCmd = &cobra.Command{
 	Use:   "create",
-	Short: "Create a new global socket",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Create a new socket",
 	Run: func(cmd *cobra.Command, args []string) {
 		if protected {
 			if username == "" {
@@ -117,13 +99,7 @@ to quickly create a Cobra application.`,
 // socketDeleteCmd represents the socket delete command
 var socketDeleteCmd = &cobra.Command{
 	Use:   "delete",
-	Short: "Delete a global socket",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Delete a socket",
 	Run: func(cmd *cobra.Command, args []string) {
 		if socketID == "" {
 			log.Fatalf("error: invalid socketid")
@@ -159,6 +135,6 @@ func init() {
 	socketCreateCmd.Flags().StringVarP(&password, "password", "", "", "Password, required when protected set to true")
 	socketCreateCmd.Flags().StringVarP(&socketType, "type", "t", "http", "Socket type, defaults to http")
 	socketCreateCmd.MarkFlagRequired("name")
-	socketDeleteCmd.Flags().StringVarP(&socketID, "id", "i", "", "Socket ID")
-	socketDeleteCmd.MarkFlagRequired("id")
+	socketDeleteCmd.Flags().StringVarP(&socketID, "socket_id", "s", "", "Socket ID")
+	socketDeleteCmd.MarkFlagRequired("socket_id")
 }

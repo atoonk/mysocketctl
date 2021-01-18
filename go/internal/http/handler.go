@@ -59,6 +59,10 @@ func Login(email, password string) error {
 		return err
 	}
 
+	if err := os.Chmod(tokenfile, 0600); err != nil {
+		return err
+	}
+
 	defer f.Close()
 	_, err2 := f.WriteString(fmt.Sprintf("%s\n", c.token))
 	if err2 != nil {
@@ -80,8 +84,11 @@ func Register(name, email, password, sshkey string) error {
 		return err
 	}
 
+        defer resp.Body.Close()
+
 	if resp.StatusCode != 200 {
-		return errors.New(fmt.Sprintf("failed to register user %d", resp.StatusCode))
+		responseData, _ := ioutil.ReadAll(resp.Body)
+		return errors.New(fmt.Sprintf("failed to register user %d\n%v", resp.StatusCode, string(responseData)))
 	}
 	return nil
 }
@@ -121,13 +128,16 @@ func DeleteSocket(socketID string) error {
 	return nil
 }
 
-func CreateSocket(name string, protected bool, username string, password string, socketType string) (*Socket, error) {
+func CreateSocket(name string, protected bool, username string, password string, socketType string, cloudAuthEnabled bool, allowedEmailAddresses []string, allowedEmailDomains []string) (*Socket, error) {
 	s := &Socket{
-		Name:              name,
-		ProtectedSocket:   protected,
-		SocketType:        socketType,
-		ProtectedUsername: username,
-		ProtectedPassword: password,
+		Name:                  name,
+		ProtectedSocket:       protected,
+		SocketType:            socketType,
+		ProtectedUsername:     username,
+		ProtectedPassword:     password,
+		CloudAuthEnabled:      cloudAuthEnabled,
+		AllowedEmailAddresses: allowedEmailAddresses,
+		AllowedEmailDomains:   allowedEmailDomains,
 	}
 
 	jv, _ := json.Marshal(s)
@@ -354,13 +364,16 @@ func GetAccountInfo() (*Account, error) {
 	return &account, nil
 }
 
-func CreateConnection(name string, protected bool, username string, password string, socketType string) (*Socket, error) {
+func CreateConnection(name string, protected bool, username string, password string, socketType string, cloudAuthEnabled bool, allowedEmailAddresses []string, allowedEmailDomains []string) (*Socket, error) {
 	s := &Socket{
-		Name:              name,
-		ProtectedSocket:   protected,
-		SocketType:        socketType,
-		ProtectedUsername: username,
-		ProtectedPassword: password,
+		Name:                  name,
+		ProtectedSocket:       protected,
+		SocketType:            socketType,
+		ProtectedUsername:     username,
+		ProtectedPassword:     password,
+                CloudAuthEnabled:      cloudAuthEnabled,
+                AllowedEmailAddresses: allowedEmailAddresses,
+                AllowedEmailDomains:   allowedEmailDomains,
 	}
 
 	jv, _ := json.Marshal(s)

@@ -18,9 +18,9 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"regexp"
 
 	"github.com/atoonk/mysocketctl/go/internal/http"
-
 	"github.com/spf13/cobra"
 )
 
@@ -29,6 +29,14 @@ var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Login to mysocket and get a token",
 	Run: func(cmd *cobra.Command, args []string) {
+
+		var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+		if len(email) < 3 && len(email) > 254 {
+			log.Fatalf("error: invalid email address: %s", email)
+		}
+		if ! emailRegex.MatchString(email) {
+			log.Fatalf("error: invalid email address: %s", email)
+		}
 
 		err := http.Login(email, password)
 		if err != nil {

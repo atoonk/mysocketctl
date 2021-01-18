@@ -22,10 +22,14 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+        "strconv"
+        "strings"
+        "regexp"
 
 	"github.com/atoonk/mysocketctl/go/internal/http"
 	"github.com/atoonk/mysocketctl/go/internal/ssh"
 	"github.com/spf13/cobra"
+	"github.com/jedib0t/go-pretty/table"
 )
 
 // connectCmd represents the connect command
@@ -46,17 +50,68 @@ var connectCmd = &cobra.Command{
 			log.Fatalf("error: empty name not allowed")
 		}
 
+                var allowedEmailAddresses []string
+                var allowedEmailDomains []string
+                var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+
+                if cloudauth {
+                        for _, a := range strings.Split(cloudauth_addresses, ",") {
+                                email := strings.TrimSpace(a)
+                                if emailRegex.MatchString(email) {
+                                        allowedEmailAddresses = append(allowedEmailAddresses, email)
+                                } else {
+                                        log.Printf("Warning: ignoring invalid email %s", email)
+                                }
+                        }
+
+                        for _, d := range strings.Split(cloudauth_domains, ",") {
+                                domain := strings.TrimSpace(d)
+                                allowedEmailDomains = append(allowedEmailDomains, domain)
+                        }
+                }
+
+                socketType := strings.ToLower(socketType)
 		if socketType != "http" && socketType != "https" && socketType != "tcp" && socketType != "tls" {
 			log.Fatalf("error: --type should be either http, https, tcp or tls")
 		}
 
-		c, err := http.CreateConnection(name, protected, username, password, socketType)
+		c, err := http.CreateConnection(name, protected, username, password, socketType, cloudauth, allowedEmailAddresses, allowedEmailDomains)
 		if err != nil {
 			log.Fatalf("error: %v", err)
 		}
 
-		fmt.Printf("%-36s | %-40s | %-40s\n", "Socket ID", "DNS Name", "Name")
-		fmt.Printf("%-36s | %-40s | %-40s\n", c.SocketID, c.Dnsname, c.Name)
+                t := table.NewWriter()
+                t.AppendHeader(table.Row{"Socket ID", "DNS Name", "Port(s)", "Type", "Cloud Auth", "Name"})
+
+                portsStr := ""
+                for _, p := range c.SocketTcpPorts {
+                        i := strconv.Itoa(p)
+                        if portsStr == "" {
+                                portsStr = i
+                        } else {
+                                portsStr = portsStr + ", " + i
+                        }
+                }
+
+                t.AppendRow(table.Row{c.SocketID, c.Dnsname, portsStr, c.SocketType, c.CloudAuthEnabled, c.Name})
+                t.SetStyle(table.StyleLight)
+                fmt.Printf("%s\n", t.Render())
+
+                if c.ProtectedSocket {
+                        tp := table.NewWriter()
+                        tp.AppendHeader(table.Row{"Username", "Password"})
+                        tp.AppendRow(table.Row{c.ProtectedUsername, c.ProtectedPassword})
+                        tp.SetStyle(table.StyleLight)
+                        fmt.Printf("\nProtected Socket:\n%s\n", tp.Render())
+                }
+
+                if c.CloudAuthEnabled {
+                        tc := table.NewWriter()
+                        tc.AppendHeader(table.Row{"Allowed email addresses", "Allowed email domains"})
+                        tc.AppendRow(table.Row{strings.Join(c.AllowedEmailAddresses, "\n"), strings.Join(c.AllowedEmailDomains, "\n")})
+                        tc.SetStyle(table.StyleLight)
+                        fmt.Printf("\nCloud Authentication, login details:\n%s\n", tc.Render())
+                }
 
 		userID, _, err2 := http.GetUserID()
 		if err2 != nil {
@@ -94,6 +149,9 @@ func init() {
 	connectCmd.Flags().StringVarP(&password, "password", "", "", "Password, required when protected set to true")
 	connectCmd.Flags().StringVarP(&socketType, "type", "t", "http", "Socket type: http, https, tcp, tls")
 	connectCmd.Flags().StringVarP(&identityFile, "identity_file", "i", "", "Identity File")
+        connectCmd.Flags().BoolVarP(&cloudauth, "cloudauth", "c", false, "Enable oauth/oidc authentication")
+        connectCmd.Flags().StringVarP(&cloudauth_addresses, "allowed_email_addresses", "e", "", "Comma seperated list of allowed Email addresses when using cloudauth")
+        connectCmd.Flags().StringVarP(&cloudauth_domains, "allowed_email_domains", "d", "", "comma seperated list of allowed Email domain (i.e. 'example.com', when using cloudauth")
 	connectCmd.MarkFlagRequired("port")
 	connectCmd.MarkFlagRequired("name")
 

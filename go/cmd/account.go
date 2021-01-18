@@ -18,6 +18,8 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"os"
+	"io/ioutil"
 
 	"github.com/atoonk/mysocketctl/go/internal/http"
 	"github.com/spf13/cobra"
@@ -34,6 +36,14 @@ var createCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create a new account",
 	Run: func(cmd *cobra.Command, args []string) {
+		if _, err := os.Stat(sshkey); err == nil {
+			dat, err := ioutil.ReadFile(sshkey)
+			if err != nil {
+				log.Fatalf("Unable to read the file %s, please check file permissions and try again (%v)", sshkey, err)
+			}
+			sshkey = string(dat)
+		}
+
 		err := http.Register(name, email, password, sshkey)
 		if err != nil {
 			log.Fatalf("error: %v", err)
@@ -67,10 +77,10 @@ var showCmd = &cobra.Command{
 
 func init() {
 
-	createCmd.Flags().StringVarP(&email, "email", "e", "", "Email address")
-	createCmd.Flags().StringVarP(&name, "name", "n", "", "Your name")
-	createCmd.Flags().StringVarP(&password, "password", "p", "", "Password")
-	createCmd.Flags().StringVarP(&sshkey, "sshkey", "s", "", "SSH Key")
+	createCmd.Flags().StringVarP(&email, "email", "e", "", "your email address")
+	createCmd.Flags().StringVarP(&name, "name", "n", "", "your name")
+	createCmd.Flags().StringVarP(&password, "password", "p", "", "your pasword")
+	createCmd.Flags().StringVarP(&sshkey, "sshkey", "s", "", "your public sshkey as a string or path, or use: --sshkey \"$(cat ~/.ssh/id_rsa.pub)\"")
 	createCmd.MarkFlagRequired("email")
 	createCmd.MarkFlagRequired("name")
 	createCmd.MarkFlagRequired("password")
@@ -79,14 +89,4 @@ func init() {
 	accountCmd.AddCommand(createCmd)
 	accountCmd.AddCommand(showCmd)
 	rootCmd.AddCommand(accountCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// accountCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// accountCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

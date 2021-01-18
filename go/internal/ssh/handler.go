@@ -31,12 +31,19 @@ func SshConnect(userID string, socketID string, tunnelID string, port int, ident
 		log.Fatalf("error: %v", err)
 	}
 
+	var authMethods []ssh.AuthMethod
+
+	if pubKey := publicKeyFile(identityFile) ; pubKey != nil {
+		authMethods = append(authMethods,  pubKey)
+	}
+
+	if sshAgent := SSHAgent() ; sshAgent != nil {
+		authMethods = append(authMethods,  sshAgent)
+	}
+
 	sshConfig := &ssh.ClientConfig{
 		User: userID,
-		Auth: []ssh.AuthMethod{
-			SSHAgent(),
-			publicKeyFile(identityFile),
-		},
+		Auth: authMethods,
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
@@ -83,7 +90,7 @@ func SshConnect(userID string, socketID string, tunnelID string, port int, ident
 			for {
 				<-c
 				log.Print("User disconnected...")
-				os.Exit(0)
+				return
 			}
 		}()
 

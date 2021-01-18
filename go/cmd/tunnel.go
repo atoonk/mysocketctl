@@ -89,8 +89,12 @@ var tunnelCreateCmd = &cobra.Command{
 			log.Fatalf("error: %v", err)
 		}
 
-		fmt.Printf("%-36s | %-16s | %-10s\n", "Tunnel ID", "Tunnel Server", "Relay Port")
-		fmt.Printf("%-36s | %-16s | %-10d\n", t.TunnelID, t.TunnelServer, t.LocalPort)
+		ta := table.NewWriter()
+		ta.AppendHeader(table.Row{"Socket ID", "Tunnel ID", "Tunnel Server", "Relay Port"})
+		ta.AppendRow(table.Row{socketID, t.TunnelID, t.TunnelServer, t.LocalPort})
+
+		ta.SetStyle(table.StyleLight)
+		fmt.Printf("%s\n", ta.Render())
 	},
 }
 

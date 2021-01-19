@@ -7,7 +7,7 @@ import (
 	"golang.org/x/crypto/ssh/agent"
 	"io"
 	"io/ioutil"
-	"os/signal"
+	"time"
 	"log"
 	"net"
 	"os"
@@ -50,6 +50,7 @@ func SshConnect(userID string, socketID string, tunnelID string, port int, ident
 	fmt.Println("\nConnecting to Server: " + mySocketSSHServer + "\n")
 
 	for {
+		time.Sleep(2 * time.Second)
 		serverConn, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", mySocketSSHServer, 22), sshConfig)
 		if err != nil {
 			log.Printf("Dial INTO remote server error: %s", err)
@@ -83,6 +84,7 @@ func SshConnect(userID string, socketID string, tunnelID string, port int, ident
 			continue
 		}
 
+/*
 		// Handle control + C
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt)
@@ -93,6 +95,7 @@ func SshConnect(userID string, socketID string, tunnelID string, port int, ident
 				return
 			}
 		}()
+*/
 
 		for {
 			client, err := listener.Accept()

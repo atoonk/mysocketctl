@@ -18,13 +18,13 @@ package cmd
 import (
 	"fmt"
 	"log"
-        "os"
-        "os/signal"
+	"os"
+	"os/signal"
 
 	"github.com/atoonk/mysocketctl/go/internal/http"
 	"github.com/atoonk/mysocketctl/go/internal/ssh"
-	"github.com/spf13/cobra"
 	"github.com/jedib0t/go-pretty/table"
+	"github.com/spf13/cobra"
 )
 
 // tunnelCmd represents the tunnel command
@@ -121,18 +121,18 @@ var tunnelConnectCmd = &cobra.Command{
 
 		userIDStr := *userID
 
-                // Handle control + C
-                c := make(chan os.Signal, 1)
-                signal.Notify(c, os.Interrupt)
-                go func() {
-                        for {
-                                <-c
-                                log.Print("User disconnected...")
-                                os.Exit(0)
-                        }
-                }()
+		// Handle control + C
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, os.Interrupt)
+		go func() {
+			for {
+				<-c
+				log.Print("User disconnected...")
+				os.Exit(0)
+			}
+		}()
 
-		ssh.SshConnect(userIDStr, socketID, tunnelID, port, identityFile)
+		ssh.SshConnect(userIDStr, socketID, tunnelID, port, hostname, identityFile)
 	},
 }
 
@@ -165,6 +165,7 @@ func init() {
 	tunnelConnectCmd.Flags().StringVarP(&socketID, "socket_id", "s", "", "Socket ID")
 	tunnelConnectCmd.Flags().StringVarP(&identityFile, "identity_file", "i", "", "Identity File")
 	tunnelConnectCmd.Flags().IntVarP(&port, "port", "p", 0, "Port number")
+	tunnelConnectCmd.Flags().StringVarP(&hostname, "host", "", "127.0.0.1", "Target host: Control where inbound traffic goes. Default localhost")
 	tunnelConnectCmd.MarkFlagRequired("tunnel_id")
 	tunnelConnectCmd.MarkFlagRequired("socket_id")
 	tunnelConnectCmd.MarkFlagRequired("port")

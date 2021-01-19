@@ -18,6 +18,8 @@ package cmd
 import (
 	"fmt"
 	"log"
+        "os"
+        "os/signal"
 
 	"github.com/atoonk/mysocketctl/go/internal/http"
 	"github.com/atoonk/mysocketctl/go/internal/ssh"
@@ -118,6 +120,18 @@ var tunnelConnectCmd = &cobra.Command{
 		}
 
 		userIDStr := *userID
+
+                // Handle control + C
+                c := make(chan os.Signal, 1)
+                signal.Notify(c, os.Interrupt)
+                go func() {
+                        for {
+                                <-c
+                                log.Print("User disconnected...")
+                                os.Exit(0)
+                        }
+                }()
+
 		ssh.SshConnect(userIDStr, socketID, tunnelID, port, identityFile)
 	},
 }

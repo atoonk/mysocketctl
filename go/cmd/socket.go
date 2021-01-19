@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
+	"regexp"
 
 	"github.com/atoonk/mysocketctl/go/internal/http"
 	"github.com/spf13/cobra"
@@ -82,17 +84,68 @@ var socketCreateCmd = &cobra.Command{
 			log.Fatalf("error: empty name not allowed")
 		}
 
+		var allowedEmailAddresses []string
+		var allowedEmailDomains []string
+		var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+
+		if cloudauth {
+			for _, a := range strings.Split(cloudauth_addresses, ",") {
+				email := strings.TrimSpace(a)
+		                if emailRegex.MatchString(email) {
+					allowedEmailAddresses = append(allowedEmailAddresses, email)
+				} else {
+					log.Printf("Warning: ignoring invalid email %s", email)
+				}
+			}
+
+			for _, d := range strings.Split(cloudauth_domains, ",") {
+				domain := strings.TrimSpace(d)
+				allowedEmailDomains = append(allowedEmailDomains, domain)
+			}
+		}
+
+		socketType := strings.ToLower(socketType)
 		if socketType != "http" && socketType != "https" && socketType != "tcp" && socketType != "tls" {
 			log.Fatalf("error: --type should be either http, https, tcp or tls")
 		}
 
-		s, err := http.CreateSocket(name, protected, username, password, socketType)
+		s, err := http.CreateSocket(name, protected, username, password, socketType, cloudauth, allowedEmailAddresses, allowedEmailDomains)
 		if err != nil {
 			log.Fatalf("error: %v", err)
 		}
 
-		fmt.Printf("%-36s | %-40s | %-40s\n", "Socket ID", "DNS Name", "Name")
-		fmt.Printf("%-36s | %-40s | %-40s\n", s.SocketID, s.Dnsname, s.Name)
+		t := table.NewWriter()
+		t.AppendHeader(table.Row{"Socket ID", "DNS Name", "Port(s)", "Type", "Cloud Auth", "Name"})
+
+		portsStr := ""
+		for _, p := range s.SocketTcpPorts {
+			i := strconv.Itoa(p)
+			if portsStr == "" {
+				portsStr = i
+			} else {
+				portsStr = portsStr + ", " + i
+			}
+		}
+
+		t.AppendRow(table.Row{s.SocketID, s.Dnsname, portsStr, s.SocketType, s.CloudAuthEnabled, s.Name})
+                t.SetStyle(table.StyleLight)
+                fmt.Printf("%s\n", t.Render())
+
+		if s.ProtectedSocket {
+			tp := table.NewWriter()
+			tp.AppendHeader(table.Row{"Username", "Password"})
+			tp.AppendRow(table.Row{s.ProtectedUsername, s.ProtectedPassword})
+	                tp.SetStyle(table.StyleLight)
+			fmt.Printf("\nProtected Socket:\n%s\n", tp.Render())
+		}
+
+		if s.CloudAuthEnabled {
+			tc := table.NewWriter()
+			tc.AppendHeader(table.Row{"Allowed email addresses", "Allowed email domains"})
+			tc.AppendRow(table.Row{strings.Join(s.AllowedEmailAddresses, "\n"), strings.Join(s.AllowedEmailDomains, "\n")})
+	                tc.SetStyle(table.StyleLight)
+			fmt.Printf("\nCloud Authentication, login details:\n%s\n", tc.Render())
+		}
 	},
 }
 
@@ -120,21 +173,16 @@ func init() {
 	socketCmd.AddCommand(socketCreateCmd)
 	socketCmd.AddCommand(socketDeleteCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// socketCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// socketCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	socketCreateCmd.Flags().StringVarP(&name, "name", "n", "", "Socket name")
 	socketCreateCmd.Flags().BoolVarP(&protected, "protected", "p", false, "Protected, default no")
 	socketCreateCmd.Flags().StringVarP(&username, "username", "u", "", "Username, required when protected set to true")
 	socketCreateCmd.Flags().StringVarP(&password, "password", "", "", "Password, required when protected set to true")
+	socketCreateCmd.Flags().BoolVarP(&cloudauth, "cloudauth", "c", false, "Enable oauth/oidc authentication")
+	socketCreateCmd.Flags().StringVarP(&cloudauth_addresses, "allowed_email_addresses", "e", "", "Comma seperated list of allowed Email addresses when using cloudauth")
+	socketCreateCmd.Flags().StringVarP(&cloudauth_domains, "allowed_email_domains", "d", "", "comma seperated list of allowed Email domain (i.e. 'example.com', when using cloudauth")
 	socketCreateCmd.Flags().StringVarP(&socketType, "type", "t", "http", "Socket type, defaults to http")
 	socketCreateCmd.MarkFlagRequired("name")
+
 	socketDeleteCmd.Flags().StringVarP(&socketID, "socket_id", "s", "", "Socket ID")
 	socketDeleteCmd.MarkFlagRequired("socket_id")
 }

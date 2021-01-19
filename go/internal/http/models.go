@@ -34,7 +34,7 @@ type Socket struct {
 	ProtectedUsername      string   `json:"protected_username"`
 	ProtectedPassword      string   `json:"protected_password"`
 	CloudAuthEnabled       bool     `json:"cloud_authentication_enabled,omitempty"`
-	AllowedEemailAddresses []string `json:"allowed_email_addresses_list,omitempty"`
+	AllowedEmailAddresses  []string `json:"allowed_email_addresses_list,omitempty"`
 	AllowedEmailDomains    []string `json:"allowed_email_domain_list,omitempty"`
 }
 

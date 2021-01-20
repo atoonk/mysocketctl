@@ -1,27 +1,10 @@
 on:
   push:
     branches: [ master ]
-builds:
-  - env:
-      - CGO_ENABLED=0
-    goos:
-      - linux
-      - darwin
-    goarch:
-      - amd64
-      - arm
-      - arm64
-archives:
-  - replacements:
-      amd64: 64-bit
-      386: 32-bit
-      arm64: ARM_64-bit
-      arm: ARM_32-bit
-      linux: Linux
-      darwin: Darwin
-
-    
-        
+jobs:
+  build:
+    name: GoReleaser build
+    runs-on: ubuntu-latest
 
     steps:
       - name: Check out code into the Go module directory
@@ -38,6 +21,6 @@ archives:
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@master
         with:
-          workdir: go/
           version: latest
           args: release --rm-dist
+          workdir: go/

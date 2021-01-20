@@ -1,31 +1,25 @@
 on:
   push:
     branches: [ master ]
-jobs:
-  build:
-    name: GoReleaser build
-    runs-on: ubuntu-latest
-   - env:
+builds:
+  - env:
       - CGO_ENABLED=0
     goos:
-      - darwin
       - linux
-      - freebsd
-      - windows
+      - darwin
     goarch:
       - amd64
       - arm
       - arm64
-    goarm:
-      - 6
-      - 7
-    ignore:
-      - goos: darwin
-        goarch: 386
-
 archives:
   - replacements:
-      darwin: macOS
+      amd64: 64-bit
+      386: 32-bit
+      arm64: ARM_64-bit
+      arm: ARM_32-bit
+      linux: Linux
+      darwin: Darwin
+
     
         
 

@@ -3,10 +3,9 @@ on:
     branches: [ master ]
 jobs:
   build:
-    workdir: go
     name: GoReleaser build
     runs-on: ubuntu-latest
-      - env:
+   - env:
       - CGO_ENABLED=0
     goos:
       - darwin
@@ -23,6 +22,10 @@ jobs:
     ignore:
       - goos: darwin
         goarch: 386
+
+archives:
+  - replacements:
+      darwin: macOS
     
         
 
@@ -41,6 +44,6 @@ jobs:
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@master
         with:
-          workdir: go
+          workdir: go/
           version: latest
           args: release --rm-dist

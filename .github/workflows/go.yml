@@ -22,5 +22,5 @@ jobs:
         uses: goreleaser/goreleaser-action@master
         with:
           version: latest
-          args: release --rm-dist
+          args: --rm-dist --skip-validate
           workdir: go/

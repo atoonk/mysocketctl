@@ -11,5 +11,5 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         goos: linux
-        project_path: go/
+        project_path: go
         goarch: amd64

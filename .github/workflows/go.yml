@@ -2,14 +2,45 @@ on:
   push:
     branches: [ master ]
 jobs:
-  release-linux-amd64:
-    name: release linux/amd64
+  build:
+    workdir: go
+    name: GoReleaser build
     runs-on: ubuntu-latest
+      - env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+      - freebsd
+      - windows
+    goarch:
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - 6
+      - 7
+    ignore:
+      - goos: darwin
+        goarch: 386
+    
+        
+
     steps:
-    - uses: actions/checkout@v2
-    - uses: wangyoucao577/go-release-action@v1.14
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        goos: linux
-        project_path: go
-        goarch: amd64
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # See: https://goreleaser.com/ci/actions/
+
+      - name: Set up Go 1.14
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14
+        id: go
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@master
+        with:
+          workdir: go
+          version: latest
+          args: release --rm-dist

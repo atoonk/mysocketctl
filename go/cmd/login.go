@@ -55,13 +55,14 @@ var loginCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			password = string(bytesPassword)
+			fmt.Print("\n")
 		}
 		err2 := http.Login(email, password)
 		if err2 != nil {
 			log.Fatalf("error: %v", err2)
 		}
 
-		fmt.Println("login successful")
+		fmt.Println("Login successful")
 	},
 }
 

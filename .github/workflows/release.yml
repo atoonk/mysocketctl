@@ -39,4 +39,6 @@ jobs:
           make all
           make release
       - name: See dist bin directory
-        run: ls -la bin
+        run: |
+          ls -la 
+          pwd

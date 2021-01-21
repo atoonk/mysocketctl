@@ -29,6 +29,7 @@ jobs:
       - name: Run Make release
         run: |
           cd go
+          make all
           make release
       - name: See dist bin directory
         run: ls -la bin

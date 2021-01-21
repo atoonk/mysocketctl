@@ -23,8 +23,9 @@ jobs:
           unzip awscliv2.zip
           ./aws/install
       - name: where am i?
-        run: pwd
-        run: ls
+        run: |
+          pwd
+          ls
       - name: Run Make release
         run: |
           make release

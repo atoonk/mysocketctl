@@ -22,7 +22,7 @@ jobs:
         uses: goreleaser/goreleaser-action@master
         with:
           version: latest
-          args: --rm-dist --skip-validate
+          #args: --rm-dist --skip-validate
           workdir: go/
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

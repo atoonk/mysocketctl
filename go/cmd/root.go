@@ -32,6 +32,7 @@ var (
 	socketType          string
 	password            string
 	port                int
+	hostname            string
 	sshkey              string
 	protected           bool
 	username            string
@@ -98,7 +99,7 @@ func initConfig() {
 	}
 }
 
-func splitLongLines(b string, maxLength int) (string) {
+func splitLongLines(b string, maxLength int) string {
 	s := ""
 	for {
 		if len(b) > maxLength {

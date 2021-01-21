@@ -5,7 +5,10 @@ GOTEST=$(GOCMD) test
 GOGET=$(GOCMD) get
 BINARY_NAME=mysocketctl
 BUCKET=mysocketctl
+<<<<<<< HEAD
 
+=======
+>>>>>>> 9480894060468d81b1ffe53c720c1bb2b26b937c
 
 all: test build
 

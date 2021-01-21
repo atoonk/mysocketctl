@@ -20,7 +20,8 @@ jobs:
         uses: actions/checkout@v1
       - name: Install dependencies
         run: |
-          sudo apt install unzip python3 python3-boto3
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-boto3
       - name: Print Versions
         run: |
            go version

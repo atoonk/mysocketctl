@@ -9,9 +9,12 @@ from botocore.exceptions import NoCredentialsError
 
 def upload_to_aws(local_file, bucket, s3_file):
     s3 = boto3.client('s3' )
+    args={}
+    if local_file.endswith('.txt'):
+        args={'ContentType': "text/plain"}
 
     try:
-        s3.upload_file(local_file, bucket, s3_file)
+        s3.upload_file(local_file, bucket, s3_file,ExtraArgs=args)
         print("Upload Successful")
         return True
     except FileNotFoundError:

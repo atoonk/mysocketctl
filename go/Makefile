@@ -19,6 +19,9 @@ release:
 	python3 ./s3upload.py ./bin/mysocketctl_darwin_amd64 ${BUCKET} macos/mysocketctl
 	python3 ./s3upload.py ./bin/mysocketctl_linux_amd64 ${BUCKET} linux_amd64/mysocketctl
 	python3 ./s3upload.py ./bin/mysocketctl_windows_amd64 ${BUCKET} windows_amd64/mysocketctl
+	echo ${VERSION} > latest_version.txt
+	python3 ./s3upload.py latest_version.txt ${BUCKET} latest_version.txt
+	rm latest_version.txt
 
 
 build:

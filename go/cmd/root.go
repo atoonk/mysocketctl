@@ -27,6 +27,7 @@ import (
 
 var (
 	version             string
+	date                string
 	cfgFile             string
 	email               string
 	name                string
@@ -49,6 +50,7 @@ var (
 var rootCmd = &cobra.Command{
 	Use:   "mysocketctl",
 	Short: "mysocket.io command line interface (CLI)",
+	Version: version,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -61,17 +63,8 @@ func Execute() {
 }
 
 func init() {
+        rootCmd.SetVersionTemplate(fmt.Sprintf("mysocketctl:\nversion %s\ndate: %s\n", version, date))
 	cobra.OnInitialize(initConfig)
-
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	//rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.mysocketctl.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
 // initConfig reads in config file and ENV variables if set.

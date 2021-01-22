@@ -6,11 +6,9 @@ GOGET=$(GOCMD) get
 BINARY_NAME=mysocketctl
 BUCKET=mysocketctl
 
-
-COMMIT := $(shell git rev-parse --short HEAD)
 DATE := $(shell git log -1 --format=%cd --date=format:"%Y%m%d")
-VERSION := $(DATE)-$(COMMIT)
-FLAGS := -ldflags "-X cmd/root.version=$(VERSION)"
+VERSION := $(shell git describe --long --dirty --tags)
+FLAGS := -ldflags "-X github.com/atoonk/mysocketctl/go/cmd.version=$(VERSION) -X github.com/atoonk/mysocketctl/go/cmd.date=$(DATE)"
 
 all: test build
 
@@ -24,10 +22,10 @@ release:
 
 
 build:
-	$(GOBUILD) -o $(BINARY_NAME) -v
+	$(GOBUILD) $(FLAGS) -o $(BINARY_NAME) -v
 
 build-linux:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(BINARY_NAME) -v
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) $(FLAGS) -o $(BINARY_NAME) -v
 
 test:
 	$(GOTEST) -v ./...
@@ -38,6 +36,6 @@ clean:
 	rm -f $(BINARY_UNIX)
 
 run:
-	$(GOBUILD) -o $(BINARY_NAME) -v ./...
+	$(GOBUILD) $(FLAGS) -o $(BINARY_NAME) -v ./...
 	./$(BINARY_NAME)
 

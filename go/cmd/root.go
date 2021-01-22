@@ -26,6 +26,7 @@ import (
 )
 
 var (
+	version             string
 	cfgFile             string
 	email               string
 	name                string
@@ -75,6 +76,7 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
+
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)

@@ -15,14 +15,13 @@ import (
 
 const (
 	mySocketSSHServer = "ssh.mysocket.io"
+	defaultTimeout    = 30 * time.Second
 )
 
-func SSHAgent() ssh.AuthMethod {
-	if sshAgent, err := net.Dial("unix", os.Getenv("SSH_AUTH_SOCK")); err == nil {
-		return ssh.PublicKeysCallback(agent.NewClient(sshAgent).Signers)
-	}
-	return nil
-}
+var (
+	defaultKeyFiles   = []string{"id_dsa","id_ecdsa","id_ed25519", "id_rsa"}
+
+)
 
 func SshConnect(userID string, socketID string, tunnelID string, port int, targethost string, identityFile string) error {
 	tunnel, err := http.GetTunnel(socketID, tunnelID)
@@ -31,20 +30,41 @@ func SshConnect(userID string, socketID string, tunnelID string, port int, targe
 		log.Fatalf("error: %v", err)
 	}
 
-	var authMethods []ssh.AuthMethod
+        sshConfig := &ssh.ClientConfig{
+                User: userID,
+                HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		Timeout: defaultTimeout,
+        }
+        var keyFiles []string
+        var signers []ssh.Signer
 
-	if pubKey := publicKeyFile(identityFile) ; pubKey != nil {
-		authMethods = append(authMethods,  pubKey)
+	if identityFile != "" {
+		f := []string{identityFile}
+		if auth, err := authWithPrivateKeys(f, true); err == nil {
+			signers = append(signers, auth...)
+		}
 	}
 
-	if sshAgent := SSHAgent() ; sshAgent != nil {
-		authMethods = append(authMethods,  sshAgent)
+	if auth, err := authWithAgent(); err == nil {
+		signers = append(signers, auth...)
 	}
 
-	sshConfig := &ssh.ClientConfig{
-		User: userID,
-		Auth: authMethods,
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+        home, err := os.UserHomeDir()
+        if err == nil {
+                for _, k := range defaultKeyFiles {
+                        f := home+"/.ssh/"+k
+                        if _, err := os.Stat(f); err == nil {
+				keyFiles = append(keyFiles, f)
+                        }
+                }
+        }
+
+	if auth, err := authWithPrivateKeys(keyFiles, false); err == nil {
+		signers = append(signers, auth...)
+	}
+
+	if signers != nil {
+		sshConfig.Auth = append(sshConfig.Auth, ssh.PublicKeys(signers...))
 	}
 
 	fmt.Println("\nConnecting to Server: " + mySocketSSHServer + "\n")
@@ -105,6 +125,9 @@ func SshConnect(userID string, socketID string, tunnelID string, port int, targe
 			}
 
 			local, err := net.Dial("tcp", fmt.Sprintf("%s:%d", targethost, port))
+			//go ioCopy(sshConn, localConn)
+			//go ioCopy(localConn, sshConn)
+
 			if err != nil {
 				log.Printf("Dial INTO local service error: %s", err)
 				continue
@@ -139,21 +162,47 @@ func handleClient(client net.Conn, remote net.Conn) {
 	<-chDone
 }
 
-func publicKeyFile(file string) ssh.AuthMethod {
-	if file == "" {
-		return nil
+func ioCopy(dst io.Writer, src io.Reader) {
+	if _, err := io.Copy(dst, src); err != nil {
+		log.Fatalf("io.Copy failed: %v", err)
 	}
+}
 
-	buffer, err := ioutil.ReadFile(file)
-	if err != nil {
-		log.Fatalln(fmt.Sprintf("Cannot read SSH public key file %s", file))
-		return nil
-	}
+func authWithPrivateKeys(keyFiles []string, fatalOnError bool) ([]ssh.Signer, error) {
+        var signers []ssh.Signer
 
-	key, err := ssh.ParsePrivateKey(buffer)
-	if err != nil {
-		log.Fatalln(fmt.Sprintf("Cannot parse SSH public key file %s", file))
-		return nil
-	}
-	return ssh.PublicKeys(key)
+        for _, file := range keyFiles {
+
+                b, err := ioutil.ReadFile(file)
+                if err != nil {
+			if fatalOnError {
+				log.Fatalln(fmt.Sprintf("Cannot read SSH key file %s (%v)", file, err.Error()))
+			} else {
+				continue
+			}
+                }
+                signer, err := ssh.ParsePrivateKey(b)
+                if err != nil {
+                        if fatalOnError {
+                                log.Fatalln(fmt.Sprintf("Cannot read SSH key file %s (%v)", file, err.Error()))
+			} else {
+				continue
+			}
+                }
+                signers = append(signers, signer)
+        }
+
+        return signers, nil
+}
+
+func authWithAgent() ([]ssh.Signer, error) {
+        if os.Getenv("SSH_AUTH_SOCK") != "" {
+                sshAgent, err := net.Dial("unix", os.Getenv("SSH_AUTH_SOCK"))
+                if err == nil {
+                        agentSigners, _ := agent.NewClient(sshAgent).Signers()
+                        return agentSigners, nil
+                }
+        }
+
+        return nil, nil
 }

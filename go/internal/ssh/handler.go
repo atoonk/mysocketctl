@@ -40,7 +40,7 @@ func SshConnect(userID string, socketID string, tunnelID string, port int, targe
 
 	if identityFile != "" {
 		f := []string{identityFile}
-		if auth, err := authWithPrivateKeys(f); err == nil {
+		if auth, err := authWithPrivateKeys(f, true); err == nil {
 			signers = append(signers, auth...)
 		}
 	}
@@ -59,7 +59,7 @@ func SshConnect(userID string, socketID string, tunnelID string, port int, targe
                 }
         }
 
-	if auth, err := authWithPrivateKeys(keyFiles); err == nil {
+	if auth, err := authWithPrivateKeys(keyFiles, false); err == nil {
 		signers = append(signers, auth...)
 	}
 
@@ -168,23 +168,28 @@ func ioCopy(dst io.Writer, src io.Reader) {
 	}
 }
 
-func authWithPrivateKeys(keyFiles []string) ([]ssh.Signer, error) {
+func authWithPrivateKeys(keyFiles []string, fatalOnError bool) ([]ssh.Signer, error) {
         var signers []ssh.Signer
 
         for _, file := range keyFiles {
 
                 b, err := ioutil.ReadFile(file)
                 if err != nil {
-                        //log.Println(fmt.Sprintf("Cannot read SSH key file %s (%v)", file, err.Error()))
-                        continue
+			if fatalOnError {
+				log.Fatalln(fmt.Sprintf("Cannot read SSH key file %s (%v)", file, err.Error()))
+			} else {
+				continue
+			}
                 }
                 signer, err := ssh.ParsePrivateKey(b)
                 if err != nil {
-                        //log.Println(fmt.Sprintf("Cannot read SSH key file %s (%v)", file, err.Error()))
-                        continue
+                        if fatalOnError {
+                                log.Fatalln(fmt.Sprintf("Cannot read SSH key file %s (%v)", file, err.Error()))
+			} else {
+				continue
+			}
                 }
                 signers = append(signers, signer)
-
         }
 
         return signers, nil

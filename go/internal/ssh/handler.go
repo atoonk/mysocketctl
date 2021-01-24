@@ -132,7 +132,7 @@ func SshConnect(userID string, socketID string, tunnelID string, port int, targe
 				log.Printf("Dial INTO local service error: %s", err)
 				continue
 			}
-			handleClient(client, local)
+			go handleClient(client, local)
 		}
 	}
 }

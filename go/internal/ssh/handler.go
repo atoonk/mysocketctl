@@ -11,7 +11,6 @@ import (
 	"log"
 	"net"
 	"os"
-	"syscall"
 )
 
 const (
@@ -29,21 +28,6 @@ func SshConnect(userID string, socketID string, tunnelID string, port int, targe
 
 	if err != nil {
 		log.Fatalf("error: %v", err)
-	}
-
-	// check open file limit
-	var rLimit syscall.Rlimit
-	err = syscall.Getrlimit(syscall.RLIMIT_NOFILE, &rLimit)
-	if err != nil {
-		fmt.Println("Error Getting Rlimit ", err)
-	}
-
-	if rLimit.Cur < rLimit.Max {
-		rLimit.Cur = rLimit.Max
-		err = syscall.Setrlimit(syscall.RLIMIT_NOFILE, &rLimit)
-		if err != nil {
-			log.Println("Error Setting Rlimit ", err)
-		}
 	}
 
         sshConfig := &ssh.ClientConfig{

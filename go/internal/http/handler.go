@@ -14,6 +14,7 @@ import (
 
 const (
 	mysocketurl = "https://api.mysocket.io"
+	download_url = "https://download.edge.mysocket.io"
 )
 
 var (
@@ -91,6 +92,51 @@ func Register(name, email, password, sshkey string) error {
 		return errors.New(fmt.Sprintf("failed to register user %d\n%v", resp.StatusCode, string(responseData)))
 	}
 	return nil
+}
+
+
+func GetLatestVersion() (string, error) {
+    client := &h.Client{}
+	req, err := h.NewRequest("GET", download_url + "/latest_version.txt", nil)
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return "", errors.New(fmt.Sprintf("Version check failed. Failed to get latest version (%d)", resp.StatusCode))
+	}
+    bodyBytes, err := ioutil.ReadAll(resp.Body)
+        if err != nil {
+            return "",err
+    }
+    bodyString := string(bodyBytes)
+    version := strings.TrimSpace(string(bodyString))
+    version = strings.TrimSuffix(version, "\n")
+    return version,  nil
+}
+
+func GetLatestBinary() ([]byte , error) {
+    client := &h.Client{}
+	req, err := h.NewRequest("GET", download_url +"/macos/mysocketctl", nil)
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, errors.New(fmt.Sprintf("Failed to get latest version (%d)", resp.StatusCode))
+	}
+    bodyBytes, err := ioutil.ReadAll(resp.Body)
+        if err != nil {
+            return nil, err
+    }
+    return bodyBytes,  nil
 }
 
 func GetToken() (string, error) {

@@ -5,15 +5,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
 	"io/ioutil"
 	h "net/http"
 	"os"
 	"strings"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
 const (
-	mysocketurl = "https://api.mysocket.io"
+	mysocketurl  = "https://api.mysocket.io"
+	download_url = "https://download.edge.mysocket.io"
 )
 
 var (
@@ -84,13 +86,95 @@ func Register(name, email, password, sshkey string) error {
 		return err
 	}
 
-        defer resp.Body.Close()
+	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
 		responseData, _ := ioutil.ReadAll(resp.Body)
 		return errors.New(fmt.Sprintf("failed to register user %d\n%v", resp.StatusCode, string(responseData)))
 	}
 	return nil
+}
+
+func GetLatestVersion() (string, error) {
+	client := &h.Client{}
+	req, err := h.NewRequest("GET", download_url+"/latest_version.txt", nil)
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return "", errors.New(fmt.Sprintf("Version check failed. Failed to get latest version (%d)", resp.StatusCode))
+	}
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	bodyString := string(bodyBytes)
+	version := strings.TrimSpace(string(bodyString))
+	version = strings.TrimSuffix(version, "\n")
+	return version, nil
+}
+
+func GetLatestBinary(osname string) (string, []byte, error) {
+	var bin_url string
+	var checksum_url string
+	switch osname {
+	case "darwin":
+		bin_url = download_url + "/darwin_amd64/mysocketctl"
+		checksum_url = download_url + "/darwin_amd64/sha256-checksum.txt"
+	case "linux":
+		bin_url = download_url + "/linux_amd64/mysocketctl"
+		checksum_url = download_url + "/linux_amd64/sha256-checksum.txt"
+	case "windows":
+		bin_url = download_url + "/windows_amd64/mysocketctl"
+		checksum_url = download_url + "/windows_amd64/sha256-checksum.txt"
+	default:
+		return "", nil, errors.New(fmt.Sprintf("unknown OS: %s", osname))
+	}
+
+	client := &h.Client{}
+	// Download checksum
+	req, err := h.NewRequest("GET", checksum_url, nil)
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", nil, err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return "", nil, errors.New(fmt.Sprintf("Failed to get latest checksum version (%d)", resp.StatusCode))
+	}
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", nil, err
+	}
+
+	bodyString := string(bodyBytes)
+	checksum := strings.TrimSpace(string(bodyString))
+	checksum = strings.TrimSuffix(checksum, "\n")
+
+	// Download binary
+	req, err = h.NewRequest("GET", bin_url, nil)
+	resp, err = client.Do(req)
+	if err != nil {
+		return "", nil, err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return "", nil, errors.New(fmt.Sprintf("Failed to get latest version (%d)", resp.StatusCode))
+	}
+
+	bodyBytes, err2 := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", nil, err2
+	}
+	return checksum, bodyBytes, nil
 }
 
 func GetToken() (string, error) {
@@ -371,9 +455,9 @@ func CreateConnection(name string, protected bool, username string, password str
 		SocketType:            socketType,
 		ProtectedUsername:     username,
 		ProtectedPassword:     password,
-                CloudAuthEnabled:      cloudAuthEnabled,
-                AllowedEmailAddresses: allowedEmailAddresses,
-                AllowedEmailDomains:   allowedEmailDomains,
+		CloudAuthEnabled:      cloudAuthEnabled,
+		AllowedEmailAddresses: allowedEmailAddresses,
+		AllowedEmailDomains:   allowedEmailDomains,
 	}
 
 	jv, _ := json.Marshal(s)

@@ -118,36 +118,63 @@ func GetLatestVersion() (string, error) {
 	return version, nil
 }
 
-func GetLatestBinary(osname string) ([]byte, error) {
-	var url string
+func GetLatestBinary(osname string) (string, []byte, error) {
+	var bin_url string
+	var checksum_url string
 	switch osname {
 	case "darwin":
-		url = download_url + "/macos/mysocketctl"
+		bin_url = download_url + "/darwin_amd64/mysocketctl"
+		checksum_url = download_url + "/darwin_amd64/sha256-checksum.txt"
 	case "linux":
-		url = download_url + "/linux/mysocketctl"
+		bin_url = download_url + "/linux_amd64/mysocketctl"
+		checksum_url = download_url + "/linux_amd64/sha256-checksum.txt"
 	case "windows":
-		url = download_url + "/windows/mysocketctl"
+		bin_url = download_url + "/windows_amd64/mysocketctl"
+		checksum_url = download_url + "/windows_amd64/sha256-checksum.txt"
 	default:
-		return nil, errors.New(fmt.Sprintf("unknown OS: %s", osname))
+		return "", nil, errors.New(fmt.Sprintf("unknown OS: %s", osname))
 	}
 
 	client := &h.Client{}
-	req, err := h.NewRequest("GET", url, nil)
+	// Download checksum
+	req, err := h.NewRequest("GET", checksum_url, nil)
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
 
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		return nil, errors.New(fmt.Sprintf("Failed to get latest version (%d)", resp.StatusCode))
+		return "", nil, errors.New(fmt.Sprintf("Failed to get latest checksum version (%d)", resp.StatusCode))
 	}
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
-	return bodyBytes, nil
+
+	bodyString := string(bodyBytes)
+	checksum := strings.TrimSpace(string(bodyString))
+	checksum = strings.TrimSuffix(checksum, "\n")
+
+	// Download binary
+	req, err = h.NewRequest("GET", bin_url, nil)
+	resp, err = client.Do(req)
+	if err != nil {
+		return "", nil, err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return "", nil, errors.New(fmt.Sprintf("Failed to get latest version (%d)", resp.StatusCode))
+	}
+
+	bodyBytes, err2 := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", nil, err2
+	}
+	return checksum, bodyBytes, nil
 }
 
 func GetToken() (string, error) {

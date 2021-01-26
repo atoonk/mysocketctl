@@ -16,6 +16,7 @@ limitations under the License.
 package cmd
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -28,7 +29,7 @@ import (
 
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
-	Use: "version",
+	Use:   "version",
 	Short: "check version",
 }
 
@@ -36,50 +37,55 @@ var checkLatestVersionCmd = &cobra.Command{
 	Use:   "check",
 	Short: "Check to see if you're running the latest version",
 	Run: func(cmd *cobra.Command, args []string) {
-            latest_version, err := http.GetLatestVersion()
-            if err != nil {
-                log.Fatalf("error while checking for latest version: %v", err)
-            }
-            if latest_version != version {
-                binary_path  := os.Args[0]
-                fmt.Printf("You're running version %s\n\n",version)
-                fmt.Printf("There is a newer version available (%s)!\n", latest_version)
-                fmt.Printf("Please upgrade:\n%s version upgrade\n", binary_path)
-            } else {
-                fmt.Printf("You are up to date!\n")
-                fmt.Printf("You're running version %s\n",version)
-            }
+		latest_version, err := http.GetLatestVersion()
+		if err != nil {
+			log.Fatalf("error while checking for latest version: %v", err)
+		}
+		if latest_version != version {
+			binary_path := os.Args[0]
+			fmt.Printf("You're running version %s\n\n", version)
+			fmt.Printf("There is a newer version available (%s)!\n", latest_version)
+			fmt.Printf("Please upgrade:\n%s version upgrade\n", binary_path)
+		} else {
+			fmt.Printf("You are up to date!\n")
+			fmt.Printf("You're running version %s\n", version)
+		}
 	},
 }
 var upgradeVersionCmd = &cobra.Command{
 	Use:   "upgrade",
 	Short: "upgrade the latest version",
 	Run: func(cmd *cobra.Command, args []string) {
-            binary_path  := os.Args[0]
-            latest_version, err := http.GetLatestVersion()
-            if err != nil {
-                log.Fatalf("error while checking for latest version: %v", err)
-            }
-            if latest_version != version {
-                fmt.Printf("Upgrading %s to version %s\n",binary_path,latest_version)
-            } else {
-                fmt.Printf("You are up to date already :)\n")
-                return
-            }
+		binary_path := os.Args[0]
+		latest_version, err := http.GetLatestVersion()
+		if err != nil {
+			log.Fatalf("error while checking for latest version: %v", err)
+		}
+		if latest_version != version {
+			fmt.Printf("Upgrading %s to version %s\n", binary_path, latest_version)
+		} else {
+			fmt.Printf("You are up to date already :)\n")
+			return
+		}
 
-            latest, err := http.GetLatestBinary(runtime.GOOS)
-            if latest == nil {
-                log.Fatalf("Error while downloading latest version %v", err)
-            }
+		checksum, latest, err := http.GetLatestBinary(runtime.GOOS)
+		if latest == nil {
+			log.Fatalf("Error while downloading latest version %v", err)
+		}
+		local_checksum := fmt.Sprintf("%x", sha256.Sum256(latest))
+		if checksum != local_checksum {
+			log.Fatalf(`Checksum error: Checksum of downloaded binary, doesn't match published checksum
+            published checksum: %s
+            downloaded binary checksum: %s`, checksum, local_checksum)
+		}
 
-            err = ioutil.WriteFile(binary_path, latest, 0644)
-	        if err != nil {
-                log.Fatalf("Error while writing new file: %v", err)
-	        }
-            fmt.Printf("Upgrade completed\n")
+		err = ioutil.WriteFile(binary_path, latest, 0644)
+		if err != nil {
+			log.Fatalf("Error while writing new file: %v", err)
+		}
+		fmt.Printf("Upgrade completed\n")
 	},
 }
-
 
 func init() {
 	versionCmd.AddCommand(checkLatestVersionCmd)

@@ -17,18 +17,18 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
-	"io/ioutil"
 
 	"github.com/atoonk/mysocketctl/go/internal/http"
-	"github.com/spf13/cobra"
 	"github.com/jedib0t/go-pretty/table"
+	"github.com/spf13/cobra"
 )
 
 // accountCmd represents the account command
 var accountCmd = &cobra.Command{
-	Use: "account",
+	Use:   "account",
 	Short: "Create a new account or see account information.",
 }
 

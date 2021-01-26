@@ -33,16 +33,16 @@ var loginCmd = &cobra.Command{
 	Short: "Login to mysocket and get a token",
 	Run: func(cmd *cobra.Command, args []string) {
 
-        // Do version check
-        latest_version, err := http.GetLatestVersion()
-        if err != nil {
-            log.Fatalf("error while checking for latest version: %v", err)
-        }
-        if latest_version != version {
-            binary_path  := os.Args[0]
-            fmt.Printf("New version available. Please upgrade:\n%s version upgrade\n\n", binary_path)
-        }
-        // end version check
+		// Do version check
+		latest_version, err := http.GetLatestVersion()
+		if err != nil {
+			log.Fatalf("error while checking for latest version: %v", err)
+		}
+		if latest_version != version {
+			binary_path := os.Args[0]
+			fmt.Printf("New version available. Please upgrade:\n%s version upgrade\n\n", binary_path)
+		}
+		// end version check
 
 		// If email is not provided, then prompt for it
 		if email == "" {

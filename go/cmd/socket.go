@@ -18,13 +18,13 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"strconv"
 	"strings"
-	"regexp"
 
 	"github.com/atoonk/mysocketctl/go/internal/http"
-	"github.com/spf13/cobra"
 	"github.com/jedib0t/go-pretty/table"
+	"github.com/spf13/cobra"
 )
 
 // socketCmd represents the socket command
@@ -91,7 +91,7 @@ var socketCreateCmd = &cobra.Command{
 		if cloudauth {
 			for _, a := range strings.Split(cloudauth_addresses, ",") {
 				email := strings.TrimSpace(a)
-		                if emailRegex.MatchString(email) {
+				if emailRegex.MatchString(email) {
 					allowedEmailAddresses = append(allowedEmailAddresses, email)
 				} else {
 					log.Printf("Warning: ignoring invalid email %s", email)
@@ -128,14 +128,14 @@ var socketCreateCmd = &cobra.Command{
 		}
 
 		t.AppendRow(table.Row{s.SocketID, s.Dnsname, portsStr, s.SocketType, s.CloudAuthEnabled, s.Name})
-                t.SetStyle(table.StyleLight)
-                fmt.Printf("%s\n", t.Render())
+		t.SetStyle(table.StyleLight)
+		fmt.Printf("%s\n", t.Render())
 
 		if s.ProtectedSocket {
 			tp := table.NewWriter()
 			tp.AppendHeader(table.Row{"Username", "Password"})
 			tp.AppendRow(table.Row{s.ProtectedUsername, s.ProtectedPassword})
-	                tp.SetStyle(table.StyleLight)
+			tp.SetStyle(table.StyleLight)
 			fmt.Printf("\nProtected Socket:\n%s\n", tp.Render())
 		}
 
@@ -143,7 +143,7 @@ var socketCreateCmd = &cobra.Command{
 			tc := table.NewWriter()
 			tc.AppendHeader(table.Row{"Allowed email addresses", "Allowed email domains"})
 			tc.AppendRow(table.Row{strings.Join(s.AllowedEmailAddresses, "\n"), strings.Join(s.AllowedEmailDomains, "\n")})
-	                tc.SetStyle(table.StyleLight)
+			tc.SetStyle(table.StyleLight)
 			fmt.Printf("\nCloud Authentication, login details:\n%s\n", tc.Render())
 		}
 	},

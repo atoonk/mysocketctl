@@ -23,19 +23,19 @@ type Account struct {
 }
 
 type Socket struct {
-	Tunnels                []Tunnel `json:"tunnels,omitempty"`
-	Username               string   `json:"user_name,omitempty"`
-	SocketID               string   `json:"socket_id,omitempty"`
-	SocketTcpPorts         []int    `json:"socket_tcp_ports,omitempty"`
-	Dnsname                string   `json:"dnsname,omitempty"`
-	Name                   string   `json:"name,omitempty"`
-	SocketType             string   `json:"socket_type,omitempty"`
-	ProtectedSocket        bool     `json:"protected_socket"`
-	ProtectedUsername      string   `json:"protected_username"`
-	ProtectedPassword      string   `json:"protected_password"`
-	CloudAuthEnabled       bool     `json:"cloud_authentication_enabled,omitempty"`
-	AllowedEmailAddresses  []string `json:"cloud_authentication_email_allowed_addressses,omitempty"`
-	AllowedEmailDomains    []string `json:"cloud_authentication_email_allowed_domains,omitempty"`
+	Tunnels               []Tunnel `json:"tunnels,omitempty"`
+	Username              string   `json:"user_name,omitempty"`
+	SocketID              string   `json:"socket_id,omitempty"`
+	SocketTcpPorts        []int    `json:"socket_tcp_ports,omitempty"`
+	Dnsname               string   `json:"dnsname,omitempty"`
+	Name                  string   `json:"name,omitempty"`
+	SocketType            string   `json:"socket_type,omitempty"`
+	ProtectedSocket       bool     `json:"protected_socket"`
+	ProtectedUsername     string   `json:"protected_username"`
+	ProtectedPassword     string   `json:"protected_password"`
+	CloudAuthEnabled      bool     `json:"cloud_authentication_enabled,omitempty"`
+	AllowedEmailAddresses []string `json:"cloud_authentication_email_allowed_addressses,omitempty"`
+	AllowedEmailDomains   []string `json:"cloud_authentication_email_allowed_domains,omitempty"`
 }
 
 type Tunnel struct {

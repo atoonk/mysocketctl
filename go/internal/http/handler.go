@@ -41,40 +41,33 @@ func NewClient() (*Client, error) {
 	return c, nil
 }
 
-func (c *Client) Request(method string, url string, target interface{}, data interface{}) error {
+func (c *Client) Request(method string, url string, target interface{}, data interface{}) (error) {
 	jv, _ := json.Marshal(data)
 	body := bytes.NewBuffer(jv)
 
-	req, err := h.NewRequest(method, fmt.Sprintf("%s/%s", mysocketurl, url), body)
-	req.Header.Add("x-access-token", c.token)
-	req.Header.Set("Content-Type", "application/json")
-	client := &h.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
+        req, err := h.NewRequest(method, fmt.Sprintf("%s/%s", mysocketurl, url), body)
+        req.Header.Add("x-access-token", c.token)
+        req.Header.Set("Content-Type", "application/json")
+        client := &h.Client{}
+        resp, err := client.Do(req)
+        if err != nil {
+                return err
+        }
 
-	defer resp.Body.Close()
+        defer resp.Body.Close()
 
-	if resp.StatusCode == 401 {
-		return errors.New(fmt.Sprintf("No valid token, Please login"))
-	}
+        if resp.StatusCode == 401 {
+                return errors.New(fmt.Sprintf("No valid token, Please login"))
+        }
 
-	if resp.StatusCode < 200 || resp.StatusCode > 204 {
-		responseData, _ := ioutil.ReadAll(resp.Body)
-		return errors.New(fmt.Sprintf("Failed to create object (%d) %v", resp.StatusCode, string(responseData)))
-	}
+        if (resp.StatusCode < 200 || resp.StatusCode > 204) {
+                responseData, _ := ioutil.ReadAll(resp.Body)
+                return errors.New(fmt.Sprintf("Failed to create object (%d) %v", resp.StatusCode, string(responseData)))
+        }
 
 	if method == "DELETE" {
 		return nil
 	}
-
-	err = json.NewDecoder(resp.Body).Decode(target)
-	if err != nil {
-		return errors.New("Failed to decode data")
-	}
-
-	return nil
 }
 
 func Login(email, password string) error {
@@ -237,30 +230,6 @@ func GetToken() (string, error) {
 	token := strings.TrimRight(string(content), "\n")
 
 	return token, nil
-}
-
-func DeleteSocket(socketID string) error {
-	token, err := GetToken()
-	if err != nil {
-		return err
-	}
-
-	client := &h.Client{}
-	req, err := h.NewRequest("DELETE", mysocketurl+"/socket/"+socketID, nil)
-	req.Header.Add("x-access-token", token)
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 204 {
-		responseData, _ := ioutil.ReadAll(resp.Body)
-		return errors.New(fmt.Sprintf("Failed to delete socket (%d) %v", resp.StatusCode, string(responseData)))
-	}
-
-	return nil
 }
 
 func GetTunnels(socketID string) ([]Tunnel, error) {

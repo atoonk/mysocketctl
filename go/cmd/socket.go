@@ -119,10 +119,10 @@ var socketCreateCmd = &cobra.Command{
 			log.Fatalf("error: --type should be either http, https, tcp or tls")
 		}
 
-                client, err := http.NewClient()
-                if err != nil {
-                        log.Fatalf("error: %v", err)
-                }
+		client, err := http.NewClient()
+		if err != nil {
+			log.Fatalf("error: %v", err)
+		}
 
 		s := http.Socket{}
 		newSocket := &http.Socket{
@@ -184,15 +184,15 @@ var socketDeleteCmd = &cobra.Command{
 			log.Fatalf("error: invalid socketid")
 		}
 
-                client, err := http.NewClient()
-                if err != nil {
-                        log.Fatalf("error: %v", err)
-                }
+		client, err := http.NewClient()
+		if err != nil {
+			log.Fatalf("error: %v", err)
+		}
 
-                err = client.Request("DELETE", "socket/"+socketID, nil, nil)
-                if err != nil {
-                         log.Fatalf(fmt.Sprintf("Error: %v", err))
-                }
+		err = client.Request("DELETE", "socket/"+socketID, nil, nil)
+		if err != nil {
+			log.Fatalf(fmt.Sprintf("Error: %v", err))
+		}
 
 		fmt.Println("Socket deleted")
 	},

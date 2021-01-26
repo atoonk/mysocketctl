@@ -103,19 +103,7 @@ func SshConnect(userID string, socketID string, tunnelID string, port int, targe
 			continue
 		}
 
-		/*
-			// Handle control + C
-			c := make(chan os.Signal, 1)
-			signal.Notify(c, os.Interrupt)
-			go func() {
-				for {
-					<-c
-					log.Print("User disconnected...")
-					return
-				}
-			}()
-		*/
-
+    
 		for {
 			client, err := listener.Accept()
 			if err != nil {
@@ -123,15 +111,17 @@ func SshConnect(userID string, socketID string, tunnelID string, port int, targe
 				continue
 			}
 
-			local, err := net.Dial("tcp", fmt.Sprintf("%s:%d", targethost, port))
-			//go ioCopy(sshConn, localConn)
-			//go ioCopy(localConn, sshConn)
+			go func() {
+				local, err := net.Dial("tcp", fmt.Sprintf("%s:%d", targethost, port))
+				if err != nil {
+					log.Printf("Dial INTO local service error: %s", err)
+					return
+				}
 
-			if err != nil {
-				log.Printf("Dial INTO local service error: %s", err)
-				continue
-			}
-			go handleClient(client, local)
+				//go ioCopy(client, local)
+				//go ioCopy(local, client)
+				go handleClient(client, local)
+			}()
 		}
 	}
 }
@@ -163,7 +153,7 @@ func handleClient(client net.Conn, remote net.Conn) {
 
 func ioCopy(dst io.Writer, src io.Reader) {
 	if _, err := io.Copy(dst, src); err != nil {
-		log.Fatalf("io.Copy failed: %v", err)
+		log.Printf("io.Copy failed: %v", err)
 	}
 }
 

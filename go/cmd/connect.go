@@ -132,6 +132,7 @@ var connectCmd = &cobra.Command{
 			os.Exit(0)
 		}()
 
+		SetRlimit()
 		ssh.SshConnect(userIDStr, c.SocketID, c.Tunnels[0].TunnelID, port, hostname, identityFile)
 		fmt.Println("cleaning up...")
 		err = http.DeleteSocket(c.SocketID)

@@ -103,7 +103,6 @@ func SshConnect(userID string, socketID string, tunnelID string, port int, targe
 			continue
 		}
 
-    
 		for {
 			client, err := listener.Accept()
 			if err != nil {

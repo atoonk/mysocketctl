@@ -5,15 +5,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
 	"io/ioutil"
 	h "net/http"
 	"os"
 	"strings"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
 const (
-	mysocketurl = "https://api.mysocket.io"
+	mysocketurl  = "https://api.mysocket.io"
 	download_url = "https://download.edge.mysocket.io"
 )
 
@@ -85,7 +86,7 @@ func Register(name, email, password, sshkey string) error {
 		return err
 	}
 
-        defer resp.Body.Close()
+	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
 		responseData, _ := ioutil.ReadAll(resp.Body)
@@ -94,34 +95,44 @@ func Register(name, email, password, sshkey string) error {
 	return nil
 }
 
-
 func GetLatestVersion() (string, error) {
-    client := &h.Client{}
-	req, err := h.NewRequest("GET", download_url + "/latest_version.txt", nil)
+	client := &h.Client{}
+	req, err := h.NewRequest("GET", download_url+"/latest_version.txt", nil)
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", err
 	}
-
 
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
 		return "", errors.New(fmt.Sprintf("Version check failed. Failed to get latest version (%d)", resp.StatusCode))
 	}
-    bodyBytes, err := ioutil.ReadAll(resp.Body)
-        if err != nil {
-            return "",err
-    }
-    bodyString := string(bodyBytes)
-    version := strings.TrimSpace(string(bodyString))
-    version = strings.TrimSuffix(version, "\n")
-    return version,  nil
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	bodyString := string(bodyBytes)
+	version := strings.TrimSpace(string(bodyString))
+	version = strings.TrimSuffix(version, "\n")
+	return version, nil
 }
 
-func GetLatestBinary() ([]byte , error) {
-    client := &h.Client{}
-	req, err := h.NewRequest("GET", download_url +"/macos/mysocketctl", nil)
+func GetLatestBinary(osname string) ([]byte, error) {
+	var url string
+	switch osname {
+	case "darwin":
+		url = download_url + "/macos/mysocketctl"
+	case "linux":
+		url = download_url + "/linux/mysocketctl"
+	case "windows":
+		url = download_url + "/windows/mysocketctl"
+	default:
+		return nil, errors.New(fmt.Sprintf("unknown OS: %s", osname))
+	}
+
+	client := &h.Client{}
+	req, err := h.NewRequest("GET", url, nil)
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
@@ -132,11 +143,11 @@ func GetLatestBinary() ([]byte , error) {
 	if resp.StatusCode != 200 {
 		return nil, errors.New(fmt.Sprintf("Failed to get latest version (%d)", resp.StatusCode))
 	}
-    bodyBytes, err := ioutil.ReadAll(resp.Body)
-        if err != nil {
-            return nil, err
-    }
-    return bodyBytes,  nil
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return bodyBytes, nil
 }
 
 func GetToken() (string, error) {
@@ -417,9 +428,9 @@ func CreateConnection(name string, protected bool, username string, password str
 		SocketType:            socketType,
 		ProtectedUsername:     username,
 		ProtectedPassword:     password,
-                CloudAuthEnabled:      cloudAuthEnabled,
-                AllowedEmailAddresses: allowedEmailAddresses,
-                AllowedEmailDomains:   allowedEmailDomains,
+		CloudAuthEnabled:      cloudAuthEnabled,
+		AllowedEmailAddresses: allowedEmailAddresses,
+		AllowedEmailDomains:   allowedEmailDomains,
 	}
 
 	jv, _ := json.Marshal(s)

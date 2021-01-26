@@ -38,11 +38,21 @@ var socketsListCmd = &cobra.Command{
 	Use:   "ls",
 	Short: "List your sockets",
 	Run: func(cmd *cobra.Command, args []string) {
-		sockets, err := http.GetSockets()
+		client, err := http.NewClient()
+		if err != nil {
+			log.Fatalf("Error: %v", err)
+		}
+
+		sockets := []http.Socket{}
+		err = client.Request("GET", "connect", &sockets, nil)
+		if err != nil {
+			log.Fatalf(fmt.Sprintf("Error: %v", err))
+		}
+
 		var portsStr string
 
 		if err != nil {
-			log.Fatalf("error: %v", err)
+			log.Fatalf("Error: %v", err)
 		}
 
 		t := table.NewWriter()
@@ -109,9 +119,25 @@ var socketCreateCmd = &cobra.Command{
 			log.Fatalf("error: --type should be either http, https, tcp or tls")
 		}
 
-		s, err := http.CreateSocket(name, protected, username, password, socketType, cloudauth, allowedEmailAddresses, allowedEmailDomains)
+		client, err := http.NewClient()
 		if err != nil {
 			log.Fatalf("error: %v", err)
+		}
+
+		s := http.Socket{}
+		newSocket := &http.Socket{
+			Name:                  name,
+			ProtectedSocket:       protected,
+			SocketType:            socketType,
+			ProtectedUsername:     username,
+			ProtectedPassword:     password,
+			CloudAuthEnabled:      cloudauth,
+			AllowedEmailAddresses: allowedEmailAddresses,
+			AllowedEmailDomains:   allowedEmailDomains,
+		}
+		err = client.Request("POST", "socket", &s, newSocket)
+		if err != nil {
+			log.Fatalf(fmt.Sprintf("Error: %v", err))
 		}
 
 		t := table.NewWriter()
@@ -158,9 +184,14 @@ var socketDeleteCmd = &cobra.Command{
 			log.Fatalf("error: invalid socketid")
 		}
 
-		err := http.DeleteSocket(socketID)
+		client, err := http.NewClient()
 		if err != nil {
 			log.Fatalf("error: %v", err)
+		}
+
+		err = client.Request("DELETE", "socket/"+socketID, nil, nil)
+		if err != nil {
+			log.Fatalf(fmt.Sprintf("Error: %v", err))
 		}
 
 		fmt.Println("Socket deleted")

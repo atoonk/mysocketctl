@@ -43,6 +43,3 @@ type Tunnel struct {
 	LocalPort    int    `json:"local_port,omitempty"`
 	TunnelServer string `json:"tunnel_server,omitempty"`
 }
-type LatestVersion struct {
-	version     string
-}

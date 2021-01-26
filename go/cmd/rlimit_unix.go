@@ -3,9 +3,9 @@
 package cmd
 
 import (
-	"syscall"
 	"fmt"
 	"log"
+	"syscall"
 )
 
 func SetRlimit() {
@@ -13,14 +13,14 @@ func SetRlimit() {
 	var rLimit syscall.Rlimit
 	err := syscall.Getrlimit(syscall.RLIMIT_NOFILE, &rLimit)
 	if err != nil {
-	        fmt.Println("Error Getting Rlimit ", err)
+		fmt.Println("Error Getting Rlimit ", err)
 	}
 
 	if rLimit.Cur < rLimit.Max {
-	        rLimit.Cur = rLimit.Max
-	        err = syscall.Setrlimit(syscall.RLIMIT_NOFILE, &rLimit)
-	        if err != nil {
-	                log.Println("Error Setting Rlimit ", err)
-	        }
+		rLimit.Cur = rLimit.Max
+		err = syscall.Setrlimit(syscall.RLIMIT_NOFILE, &rLimit)
+		if err != nil {
+			log.Println("Error Setting Rlimit ", err)
+		}
 	}
 }

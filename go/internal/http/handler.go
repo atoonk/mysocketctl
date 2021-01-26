@@ -84,7 +84,7 @@ func Register(name, email, password, sshkey string) error {
 		return err
 	}
 
-        defer resp.Body.Close()
+	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
 		responseData, _ := ioutil.ReadAll(resp.Body)
@@ -371,9 +371,9 @@ func CreateConnection(name string, protected bool, username string, password str
 		SocketType:            socketType,
 		ProtectedUsername:     username,
 		ProtectedPassword:     password,
-                CloudAuthEnabled:      cloudAuthEnabled,
-                AllowedEmailAddresses: allowedEmailAddresses,
-                AllowedEmailDomains:   allowedEmailDomains,
+		CloudAuthEnabled:      cloudAuthEnabled,
+		AllowedEmailAddresses: allowedEmailAddresses,
+		AllowedEmailDomains:   allowedEmailDomains,
 	}
 
 	jv, _ := json.Marshal(s)

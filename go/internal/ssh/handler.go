@@ -7,10 +7,10 @@ import (
 	"golang.org/x/crypto/ssh/agent"
 	"io"
 	"io/ioutil"
-	"time"
 	"log"
 	"net"
 	"os"
+	"time"
 )
 
 const (
@@ -19,8 +19,7 @@ const (
 )
 
 var (
-	defaultKeyFiles   = []string{"id_dsa","id_ecdsa","id_ed25519", "id_rsa"}
-
+	defaultKeyFiles = []string{"id_dsa", "id_ecdsa", "id_ed25519", "id_rsa"}
 )
 
 func SshConnect(userID string, socketID string, tunnelID string, port int, targethost string, identityFile string) error {
@@ -30,13 +29,13 @@ func SshConnect(userID string, socketID string, tunnelID string, port int, targe
 		log.Fatalf("error: %v", err)
 	}
 
-        sshConfig := &ssh.ClientConfig{
-                User: userID,
-                HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-		Timeout: defaultTimeout,
-        }
-        var keyFiles []string
-        var signers []ssh.Signer
+	sshConfig := &ssh.ClientConfig{
+		User:            userID,
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		Timeout:         defaultTimeout,
+	}
+	var keyFiles []string
+	var signers []ssh.Signer
 
 	if identityFile != "" {
 		f := []string{identityFile}
@@ -49,15 +48,15 @@ func SshConnect(userID string, socketID string, tunnelID string, port int, targe
 		signers = append(signers, auth...)
 	}
 
-        home, err := os.UserHomeDir()
-        if err == nil {
-                for _, k := range defaultKeyFiles {
-                        f := home+"/.ssh/"+k
-                        if _, err := os.Stat(f); err == nil {
+	home, err := os.UserHomeDir()
+	if err == nil {
+		for _, k := range defaultKeyFiles {
+			f := home + "/.ssh/" + k
+			if _, err := os.Stat(f); err == nil {
 				keyFiles = append(keyFiles, f)
-                        }
-                }
-        }
+			}
+		}
+	}
 
 	if auth, err := authWithPrivateKeys(keyFiles, false); err == nil {
 		signers = append(signers, auth...)
@@ -158,40 +157,40 @@ func ioCopy(dst io.Writer, src io.Reader) {
 }
 
 func authWithPrivateKeys(keyFiles []string, fatalOnError bool) ([]ssh.Signer, error) {
-        var signers []ssh.Signer
+	var signers []ssh.Signer
 
-        for _, file := range keyFiles {
+	for _, file := range keyFiles {
 
-                b, err := ioutil.ReadFile(file)
-                if err != nil {
+		b, err := ioutil.ReadFile(file)
+		if err != nil {
 			if fatalOnError {
 				log.Fatalln(fmt.Sprintf("Cannot read SSH key file %s (%v)", file, err.Error()))
 			} else {
 				continue
 			}
-                }
-                signer, err := ssh.ParsePrivateKey(b)
-                if err != nil {
-                        if fatalOnError {
-                                log.Fatalln(fmt.Sprintf("Cannot read SSH key file %s (%v)", file, err.Error()))
+		}
+		signer, err := ssh.ParsePrivateKey(b)
+		if err != nil {
+			if fatalOnError {
+				log.Fatalln(fmt.Sprintf("Cannot read SSH key file %s (%v)", file, err.Error()))
 			} else {
 				continue
 			}
-                }
-                signers = append(signers, signer)
-        }
+		}
+		signers = append(signers, signer)
+	}
 
-        return signers, nil
+	return signers, nil
 }
 
 func authWithAgent() ([]ssh.Signer, error) {
-        if os.Getenv("SSH_AUTH_SOCK") != "" {
-                sshAgent, err := net.Dial("unix", os.Getenv("SSH_AUTH_SOCK"))
-                if err == nil {
-                        agentSigners, _ := agent.NewClient(sshAgent).Signers()
-                        return agentSigners, nil
-                }
-        }
+	if os.Getenv("SSH_AUTH_SOCK") != "" {
+		sshAgent, err := net.Dial("unix", os.Getenv("SSH_AUTH_SOCK"))
+		if err == nil {
+			agentSigners, _ := agent.NewClient(sshAgent).Signers()
+			return agentSigners, nil
+		}
+	}
 
-        return nil, nil
+	return nil, nil
 }

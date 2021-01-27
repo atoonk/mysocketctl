@@ -97,6 +97,7 @@ var upgradeVersionCmd = &cobra.Command{
 		if err != nil {
 			log.Fatalf("Error while writing new file: %v", err)
 		}
+		tmpfile.Close()
 
 		if err := os.Chmod(tmpfile.Name(), 0755); err != nil {
 			log.Fatalln(err)

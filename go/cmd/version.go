@@ -98,20 +98,26 @@ var upgradeVersionCmd = &cobra.Command{
 			log.Fatalf("Error while writing new file: %v", err)
 		}
 		tmpfile.Close()
-
 		if err := os.Chmod(tmpfile.Name(), 0755); err != nil {
 			log.Fatalln(err)
 		}
 
 		if runtime.GOOS == "windows" {
-			err = os.Remove(binary_path)
-			if err != nil {
-				log.Fatal(err)
-			}
-			e := osrename.Rename(tmpfile.Name(), binary_path)
+			// 1) first remove potential old files
+			bakfile := binary_path + ".bak"
+			_ = os.Remove(bakfile)
+
+			// 2) then move the current file to .bak
+			e := osrename.Rename(binary_path, bakfile)
 			if e != nil {
 				log.Fatal(e)
 			}
+			// 3) move tmp file naar current binary
+			e = osrename.Rename(tmpfile.Name(), binary_path)
+			if e != nil {
+				log.Fatal(e)
+			}
+
 		} else {
 			e := os.Rename(tmpfile.Name(), binary_path)
 			if e != nil {

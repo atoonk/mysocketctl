@@ -18,13 +18,13 @@ package cmd
 import (
 	"crypto/sha256"
 	"fmt"
+	"github.com/atoonk/mysocketctl/go/internal/http"
+	"github.com/spf13/cobra"
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"runtime"
-
-	"github.com/atoonk/mysocketctl/go/internal/http"
-	"github.com/spf13/cobra"
 )
 
 // versionCmd represents the version command
@@ -56,7 +56,10 @@ var upgradeVersionCmd = &cobra.Command{
 	Use:   "upgrade",
 	Short: "upgrade the latest version",
 	Run: func(cmd *cobra.Command, args []string) {
-		binary_path := os.Args[0]
+		binary_path, err := filepath.Abs(os.Args[0])
+		if err != nil {
+			log.Fatal(err)
+		}
 		latest_version, err := http.GetLatestVersion()
 		if err != nil {
 			log.Fatalf("error while checking for latest version: %v", err)

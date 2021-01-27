@@ -18,12 +18,13 @@ package cmd
 import (
 	"crypto/sha256"
 	"fmt"
-	"github.com/atoonk/mysocketctl/go/internal/http"
-	"github.com/spf13/cobra"
 	"io/ioutil"
 	"log"
 	"os"
 	"runtime"
+
+	"github.com/atoonk/mysocketctl/go/internal/http"
+	"github.com/spf13/cobra"
 )
 
 // versionCmd represents the version command
@@ -81,9 +82,28 @@ var upgradeVersionCmd = &cobra.Command{
             downloaded binary checksum: %s`, checksum, local_checksum)
 		}
 
-		err = ioutil.WriteFile(binary_path, latest, 0644)
+		tmpfile, err := ioutil.TempFile("", "mysocketctl-"+latest_version)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if err := tmpfile.Close(); err != nil {
+			log.Fatal(err)
+		}
+
+		defer os.Remove(tmpfile.Name())
+
+		err = ioutil.WriteFile(tmpfile.Name(), latest, 0644)
 		if err != nil {
 			log.Fatalf("Error while writing new file: %v", err)
+		}
+
+		if err := os.Chmod(tmpfile.Name(), 0755); err != nil {
+			log.Fatalln(err)
+		}
+
+		e := os.Rename(tmpfile.Name(), binary_path)
+		if e != nil {
+			log.Fatal(e)
 		}
 		fmt.Printf("Upgrade completed\n")
 	},

@@ -1,4 +1,4 @@
-Mysocketctl: a CLI tool for Mysocket.io 
+Mysocketctl: a CLI tool for Mysocket.io ,
 ==================================================
 Mysocketctl is a CLI wrapper around the Mysocket.io API.
 
@@ -24,3 +24,4 @@ Links
 Bugs
 --------------------
 Please report bugs, issues, feature requests, etc. on `GitHub <https://github.com/atoonk/mysocketctl/issues>`_.
+

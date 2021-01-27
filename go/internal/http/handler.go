@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	h "net/http"
 	"os"
+	"runtime"
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
@@ -18,9 +19,11 @@ const (
 	download_url = "https://download.edge.mysocket.io"
 )
 
+/*
 var (
-	tokenfile = fmt.Sprintf("%s/.mysocketio_token", os.Getenv("HOME"))
+	tokenfile = fmt.Sprintf("%s/.mysocketio_token", os.UserHomeDir())
 )
+*/
 
 type client struct {
 	token string
@@ -28,6 +31,16 @@ type client struct {
 
 type Client struct {
 	token string
+}
+
+func tokenfile() string {
+	tokenfile := ""
+	if runtime.GOOS == "windows" {
+		tokenfile = fmt.Sprintf("%s/.mysocketio_token", os.Getenv("APPDATA"))
+	} else {
+		tokenfile = fmt.Sprintf("%s/.mysocketio_token", os.Getenv("HOME"))
+	}
+	return tokenfile
 }
 
 func NewClient() (*Client, error) {
@@ -107,12 +120,12 @@ func Login(email, password string) error {
 
 	c.token = res.Token
 
-	f, err := os.Create(tokenfile)
+	f, err := os.Create(tokenfile())
 	if err != nil {
 		return err
 	}
 
-	if err := os.Chmod(tokenfile, 0600); err != nil {
+	if err := os.Chmod(tokenfile(), 0600); err != nil {
 		return err
 	}
 
@@ -180,7 +193,7 @@ func GetLatestBinary(osname string) (string, []byte, error) {
 		bin_url = download_url + "/linux_amd64/mysocketctl"
 		checksum_url = download_url + "/linux_amd64/sha256-checksum.txt"
 	case "windows":
-		bin_url = download_url + "/windows_amd64/mysocketctl"
+		bin_url = download_url + "/windows_amd64/mysocketctl.exe"
 		checksum_url = download_url + "/windows_amd64/sha256-checksum.txt"
 	default:
 		return "", nil, errors.New(fmt.Sprintf("unknown OS: %s", osname))
@@ -229,14 +242,16 @@ func GetLatestBinary(osname string) (string, []byte, error) {
 }
 
 func GetToken() (string, error) {
-	content, err := ioutil.ReadFile(tokenfile)
+	if _, err := os.Stat(tokenfile()); os.IsNotExist(err) {
+		return "", errors.New(fmt.Sprintf("Please login first (no token found)"))
+	}
+	content, err := ioutil.ReadFile(tokenfile())
 	if err != nil {
 		return "", err
 	}
 
-	token := strings.TrimRight(string(content), "\n")
-
-	return token, nil
+	tokenString := strings.TrimRight(string(content), "\n")
+	return tokenString, nil
 }
 
 func GetTunnel(socketID string, tunnelID string) (*Tunnel, error) {

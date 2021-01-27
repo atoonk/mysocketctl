@@ -24,6 +24,7 @@ import (
 	"runtime"
 
 	"github.com/atoonk/mysocketctl/go/internal/http"
+	osrename "github.com/jbenet/go-os-rename"
 	"github.com/spf13/cobra"
 )
 
@@ -56,7 +57,10 @@ var upgradeVersionCmd = &cobra.Command{
 	Use:   "upgrade",
 	Short: "upgrade the latest version",
 	Run: func(cmd *cobra.Command, args []string) {
-		binary_path := os.Args[0]
+		binary_path, err := os.Executable()
+		if err != nil {
+			log.Fatal(err)
+		}
 		latest_version, err := http.GetLatestVersion()
 		if err != nil {
 			log.Fatalf("error while checking for latest version: %v", err)
@@ -79,9 +83,40 @@ var upgradeVersionCmd = &cobra.Command{
             downloaded binary checksum: %s`, checksum, local_checksum)
 		}
 
-		err = ioutil.WriteFile(binary_path, latest, 0644)
+		tmpfile, err := ioutil.TempFile("", "mysocketctl-"+latest_version)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if err := tmpfile.Close(); err != nil {
+			log.Fatal(err)
+		}
+
+		defer os.Remove(tmpfile.Name())
+
+		err = ioutil.WriteFile(tmpfile.Name(), latest, 0644)
 		if err != nil {
 			log.Fatalf("Error while writing new file: %v", err)
+		}
+		tmpfile.Close()
+
+		if err := os.Chmod(tmpfile.Name(), 0755); err != nil {
+			log.Fatalln(err)
+		}
+
+		if runtime.GOOS == "windows" {
+			err = os.Remove(binary_path)
+			if err != nil {
+				log.Fatal(err)
+			}
+			e := osrename.Rename(tmpfile.Name(), binary_path)
+			if e != nil {
+				log.Fatal(e)
+			}
+		} else {
+			e := os.Rename(tmpfile.Name(), binary_path)
+			if e != nil {
+				log.Fatal(e)
+			}
 		}
 		fmt.Printf("Upgrade completed\n")
 	},

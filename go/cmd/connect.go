@@ -126,7 +126,7 @@ var connectCmd = &cobra.Command{
 			<-ch
 			fmt.Println("cleaning up...")
 			client, err := http.NewClient()
-			err = client.Request("DELETE", "socket/"+socketID, nil, nil)
+			err = client.Request("DELETE", "socket/"+c.SocketID, nil, nil)
 			if err != nil {
 				log.Fatalf("error: %v", err)
 			}
@@ -137,7 +137,7 @@ var connectCmd = &cobra.Command{
 		ssh.SshConnect(userIDStr, c.SocketID, c.Tunnels[0].TunnelID, port, hostname, identityFile)
 		fmt.Println("cleaning up...")
 		client, err := http.NewClient()
-		err = client.Request("DELETE", "socket/"+socketID, nil, nil)
+		err = client.Request("DELETE", "socket/"+c.SocketID, nil, nil)
 		if err != nil {
 			log.Fatalf("error: %v", err)
 		}

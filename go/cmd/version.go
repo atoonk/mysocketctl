@@ -103,6 +103,10 @@ var upgradeVersionCmd = &cobra.Command{
 		}
 
 		if runtime.GOOS == "windows" {
+			err = os.Remove(binary_path)
+			if err != nil {
+				log.Fatal(err)
+			}
 			e := osrename.Rename(tmpfile.Name(), binary_path)
 			if e != nil {
 				log.Fatal(e)

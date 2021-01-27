@@ -23,7 +23,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"path/filepath"
 	"runtime"
 )
 
@@ -56,7 +55,7 @@ var upgradeVersionCmd = &cobra.Command{
 	Use:   "upgrade",
 	Short: "upgrade the latest version",
 	Run: func(cmd *cobra.Command, args []string) {
-		binary_path, err := filepath.Abs(os.Args[0])
+		binary_path, err := os.Executable()
 		if err != nil {
 			log.Fatal(err)
 		}

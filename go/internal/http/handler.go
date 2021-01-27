@@ -193,7 +193,7 @@ func GetLatestBinary(osname string) (string, []byte, error) {
 		bin_url = download_url + "/linux_amd64/mysocketctl"
 		checksum_url = download_url + "/linux_amd64/sha256-checksum.txt"
 	case "windows":
-		bin_url = download_url + "/windows_amd64/mysocketctl"
+		bin_url = download_url + "/windows_amd64/mysocketctl.exe"
 		checksum_url = download_url + "/windows_amd64/sha256-checksum.txt"
 	default:
 		return "", nil, errors.New(fmt.Sprintf("unknown OS: %s", osname))

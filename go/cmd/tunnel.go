@@ -40,10 +40,16 @@ var tunnelListCmd = &cobra.Command{
 		if socketID == "" {
 			log.Fatalf("error: --socket_id required")
 		}
-		tunnels, err := http.GetTunnels(socketID)
 
+		client, err := http.NewClient()
 		if err != nil {
-			log.Fatalf("error: %v", err)
+			log.Fatalf("Error: %v", err)
+		}
+
+		tunnels := []http.Tunnel{}
+		err = client.Request("GET", "socket/"+socketID+"/tunnel", &tunnels, nil)
+		if err != nil {
+			log.Fatalf(fmt.Sprintf("Error: %v", err))
 		}
 
 		ta := table.NewWriter()
@@ -69,9 +75,14 @@ var tunnelDeleteCmd = &cobra.Command{
 			log.Fatalf("error: invalid tunnel_id")
 		}
 
-		err := http.DeleteTunnel(socketID, tunnelID)
+		client, err := http.NewClient()
 		if err != nil {
 			log.Fatalf("error: %v", err)
+		}
+
+		err = client.Request("DELETE", "socket/"+socketID+"/tunnel/"+tunnelID, nil, nil)
+		if err != nil {
+			log.Fatalf(fmt.Sprintf("Error: %v", err))
 		}
 
 		fmt.Println("Tunnel deleted")
@@ -86,9 +97,15 @@ var tunnelCreateCmd = &cobra.Command{
 			log.Fatalf("error: empty socket_id not allowed")
 		}
 
-		t, err := http.CreateTunnel(socketID)
+		client, err := http.NewClient()
 		if err != nil {
 			log.Fatalf("error: %v", err)
+		}
+
+		t := http.Tunnel{}
+		err = client.Request("POST", "socket/"+socketID+"/tunnel", &t, http.Tunnel{})
+		if err != nil {
+			log.Fatalf(fmt.Sprintf("Error: %v", err))
 		}
 
 		ta := table.NewWriter()

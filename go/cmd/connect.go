@@ -75,9 +75,26 @@ var connectCmd = &cobra.Command{
 			log.Fatalf("error: --type should be either http, https, tcp or tls")
 		}
 
-		c, err := http.CreateConnection(name, protected, username, password, socketType, cloudauth, allowedEmailAddresses, allowedEmailDomains)
+		connection := &http.Socket{
+			Name:                  name,
+			ProtectedSocket:       protected,
+			SocketType:            socketType,
+			ProtectedUsername:     username,
+			ProtectedPassword:     password,
+			CloudAuthEnabled:      cloudauth,
+			AllowedEmailAddresses: allowedEmailAddresses,
+			AllowedEmailDomains:   allowedEmailDomains,
+		}
+
+		client, err := http.NewClient()
 		if err != nil {
-			log.Fatalf("error: %v", err)
+			log.Fatalf("Error: %v", err)
+		}
+
+		c := http.Socket{}
+		err = client.Request("POST", "connect", &c, connection)
+		if err != nil {
+			log.Fatalf(fmt.Sprintf("Error: %v", err))
 		}
 
 		t := table.NewWriter()
@@ -136,7 +153,8 @@ var connectCmd = &cobra.Command{
 		SetRlimit()
 		ssh.SshConnect(userIDStr, c.SocketID, c.Tunnels[0].TunnelID, port, hostname, identityFile)
 		fmt.Println("cleaning up...")
-		client, err := http.NewClient()
+		client, err = http.NewClient()
+
 		err = client.Request("DELETE", "socket/"+c.SocketID, nil, nil)
 		if err != nil {
 			log.Fatalf("error: %v", err)

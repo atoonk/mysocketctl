@@ -59,7 +59,18 @@ var showCmd = &cobra.Command{
 	Use:   "show",
 	Short: "Show account information",
 	Run: func(cmd *cobra.Command, args []string) {
-		account, err := http.GetAccountInfo()
+		_, userID, err := http.GetUserID()
+		if err != nil {
+			log.Fatalf("error: %v", err)
+		}
+
+		client, err := http.NewClient()
+		if err != nil {
+			log.Fatalf("error: %v", err)
+		}
+
+		account := http.Account{}
+		err = client.Request("GET", "user/"+*userID, &account, nil)
 		if err != nil {
 			log.Fatalf("error: %v", err)
 		}

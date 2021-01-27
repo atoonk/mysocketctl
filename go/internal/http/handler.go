@@ -78,7 +78,7 @@ func (c *Client) Request(method string, url string, target interface{}, data int
 		return errors.New(fmt.Sprintf("Failed to create object (%d) %v", resp.StatusCode, string(responseData)))
 	}
 
-	if method == "DELETE" {
+	if resp.StatusCode == 204 {
 		return nil
 	}
 
@@ -254,92 +254,6 @@ func GetToken() (string, error) {
 	return tokenString, nil
 }
 
-func GetTunnels(socketID string) ([]Tunnel, error) {
-	tunnels := []Tunnel{}
-	token, err := GetToken()
-	if err != nil {
-		return nil, err
-	}
-
-	client := &h.Client{}
-	req, err := h.NewRequest("GET", mysocketurl+"/socket/"+socketID+"/tunnel", nil)
-	req.Header.Add("x-access-token", token)
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 200 {
-		return nil, errors.New(fmt.Sprintf("Failed to get tunnels (%d)", resp.StatusCode))
-	}
-
-	err = json.NewDecoder(resp.Body).Decode(&tunnels)
-	if err != nil {
-		return nil, errors.New("Failed to decode tunnels response")
-	}
-	return tunnels, nil
-}
-
-func DeleteTunnel(socketID string, tunnelID string) error {
-	token, err := GetToken()
-	if err != nil {
-		return err
-	}
-
-	client := &h.Client{}
-	req, err := h.NewRequest("DELETE", mysocketurl+"/socket/"+socketID+"/tunnel/"+tunnelID, nil)
-	req.Header.Add("x-access-token", token)
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 204 {
-		responseData, _ := ioutil.ReadAll(resp.Body)
-		return errors.New(fmt.Sprintf("Failed to delete tunnel (%d) %v", resp.StatusCode, string(responseData)))
-	}
-
-	return nil
-}
-
-func CreateTunnel(socketID string) (*Tunnel, error) {
-	t := &Tunnel{}
-
-	jv, _ := json.Marshal(t)
-	body := bytes.NewBuffer(jv)
-
-	token, err := GetToken()
-	if err != nil {
-		return nil, err
-	}
-
-	client := &h.Client{}
-	req, err := h.NewRequest("POST", mysocketurl+"/socket/"+socketID+"/tunnel", body)
-	req.Header.Add("x-access-token", token)
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 200 {
-		responseData, _ := ioutil.ReadAll(resp.Body)
-		return nil, errors.New(fmt.Sprintf("Failed to create tunnel (%d) %v", resp.StatusCode, string(responseData)))
-	}
-
-	err = json.NewDecoder(resp.Body).Decode(&t)
-	if err != nil {
-		return nil, errors.New("Failed to decode create tunnel response")
-	}
-	return t, nil
-}
-
 func GetTunnel(socketID string, tunnelID string) (*Tunnel, error) {
 	tunnel := Tunnel{}
 	token, err := GetToken()
@@ -384,80 +298,4 @@ func GetUserID() (*string, *string, error) {
 	userID := strings.ReplaceAll(tokenUserId, "-", "")
 
 	return &userID, &tokenUserId, nil
-}
-
-func GetAccountInfo() (*Account, error) {
-	_, userID, err1 := GetUserID()
-	if err1 != nil {
-		return nil, err1
-	}
-
-	account := Account{}
-	token, err := GetToken()
-	if err != nil {
-		return nil, err
-	}
-
-	client := &h.Client{}
-	req, err := h.NewRequest("GET", mysocketurl+"/user/"+*userID, nil)
-	req.Header.Add("x-access-token", token)
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 200 {
-		return nil, errors.New(fmt.Sprintf("Failed to get account (%d)", resp.StatusCode))
-	}
-
-	err = json.NewDecoder(resp.Body).Decode(&account)
-	if err != nil {
-		return nil, errors.New("Failed to decode account response")
-	}
-	return &account, nil
-}
-
-func CreateConnection(name string, protected bool, username string, password string, socketType string, cloudAuthEnabled bool, allowedEmailAddresses []string, allowedEmailDomains []string) (*Socket, error) {
-	s := &Socket{
-		Name:                  name,
-		ProtectedSocket:       protected,
-		SocketType:            socketType,
-		ProtectedUsername:     username,
-		ProtectedPassword:     password,
-		CloudAuthEnabled:      cloudAuthEnabled,
-		AllowedEmailAddresses: allowedEmailAddresses,
-		AllowedEmailDomains:   allowedEmailDomains,
-	}
-
-	jv, _ := json.Marshal(s)
-	body := bytes.NewBuffer(jv)
-
-	token, err := GetToken()
-	if err != nil {
-		return nil, err
-	}
-
-	client := &h.Client{}
-	req, err := h.NewRequest("POST", mysocketurl+"/connect", body)
-	req.Header.Add("x-access-token", token)
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 200 {
-		responseData, _ := ioutil.ReadAll(resp.Body)
-		return nil, errors.New(fmt.Sprintf("Failed to create connection (%d) %v", resp.StatusCode, string(responseData)))
-	}
-
-	err = json.NewDecoder(resp.Body).Decode(&s)
-	if err != nil {
-		return nil, errors.New("Failed to decode create connection response")
-	}
-	return s, nil
 }

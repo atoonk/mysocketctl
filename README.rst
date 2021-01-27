@@ -1,4 +1,4 @@
-Mysocketctl: a CLI tool for Mysocket.io 
+Mysocketctl: a CLI tool for Mysocket.io ,
 ==================================================
 Mysocketctl is a CLI wrapper around the Mysocket.io API.
 

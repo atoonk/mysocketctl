@@ -103,11 +103,12 @@ func SshConnect(userID string, socketID string, tunnelID string, port int, targe
 			continue
 		}
 
-		for {
+		go func() {
+			for {
 			client, err := listener.Accept()
 			if err != nil {
-				log.Print(err)
-				continue
+				log.Printf("SSH accept error: %v", err)
+				return
 			}
 
 			go func() {
@@ -121,7 +122,13 @@ func SshConnect(userID string, socketID string, tunnelID string, port int, targe
 				//go ioCopy(local, client)
 				go handleClient(client, local)
 			}()
-		}
+			}
+		}()
+
+                if err := session.Wait(); err != nil {
+                        log.Print(err)
+                        continue
+                }
 	}
 }
 

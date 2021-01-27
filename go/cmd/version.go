@@ -24,6 +24,7 @@ import (
 	"runtime"
 
 	"github.com/atoonk/mysocketctl/go/internal/http"
+	osrename "github.com/jbenet/go-os-rename"
 	"github.com/spf13/cobra"
 )
 
@@ -101,9 +102,16 @@ var upgradeVersionCmd = &cobra.Command{
 			log.Fatalln(err)
 		}
 
-		e := os.Rename(tmpfile.Name(), binary_path)
-		if e != nil {
-			log.Fatal(e)
+		if runtime.GOOS == "windows" {
+			e := osrename.Rename(tmpfile.Name(), binary_path)
+			if e != nil {
+				log.Fatal(e)
+			}
+		} else {
+			e := os.Rename(tmpfile.Name(), binary_path)
+			if e != nil {
+				log.Fatal(e)
+			}
 		}
 		fmt.Printf("Upgrade completed\n")
 	},
